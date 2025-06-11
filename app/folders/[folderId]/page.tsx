@@ -1,5 +1,5 @@
-import FolderIcon from "@/components/FolderIcon";
-import Taskbar from "@/components/Taskbar";
+import FileIcon from "@/components/FileIcon";
+import Link from "next/link";
 
 
 export default function Home() {
@@ -39,16 +39,16 @@ export default function Home() {
 
       {/* ——— Folders ——— */}
       <div className="absolute top-1/20 right-8 flex flex-col gap-10 z-30">
-        <FolderIcon text="ai news"     url="http://localhost:3000/folders/ai-news" />
-        <FolderIcon text="internships" url="http://localhost:3000/folders/internships" />
-        <FolderIcon text="hackathons"  url="http://localhost:3000/folders/hackathons" />
+        <FileIcon text="ai news"     url="http://localhost:3000/files/ai-news" />
+        <FileIcon text="internships" url="http://localhost:3000/files/internships" />
+        <FileIcon text="hackathons"  url="http://localhost:3000/files/hackathons" />
       </div>
 
       {/* ——— Intro Text ——— */}
       <div className="absolute top-1/20 left-8 flex flex-col gap-2 z-30">
-        <h1 className="text-white text-xl pixelated-font mb-8">welcome to tensor protocol</h1>
-        <h1 className="text-white text-xl pixelated-font">checkout the latest drop <a href="#" target="_blank" className="text-white/50 underline">link</a></h1>
-        <h1 className="text-white text-xl pixelated-font">not subscribed yet? <a href="#" target="_blank" className="text-white/50 underline">sub here</a></h1>
+        <Link href="/"><h1 className="text-white text-4xl pixelated-font mb-8">{'<-'} Go Back</h1></Link>
+        <h1 className="text-white text-xl pixelated-font">welcome to the world of ai news</h1>
+        <h1 className="text-white text-xl pixelated-font">a place to increase your knowledge</h1>
       </div>
 
       {/* ——— Timer ——— */}
@@ -56,8 +56,6 @@ export default function Home() {
         <h1 className="text-white text-[140px] pixelated-font p-0">38<span className="text-[40px]">.552677</span></h1>
         <h1 className="text-white text-[30px] pixelated-font">days till the next drop</h1>
       </div>
-
-      {/* <Taskbar /> */}
     </div>
   );
 }

@@ -2,19 +2,19 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link';
 
-interface FolderIconProps {
+interface FileIconProps {
     text: string;
     url: string;
 }
 
-function FolderIcon({ text, url }: FolderIconProps) {
+function FileIcon({ text, url }: FileIconProps) {
     return (
         <Link href={url}>
             <div className="flex flex-col items-center">
                 <div className="relative w-16 h-16">
                     <Image
-                        src="/folder.png"
-                        alt="Folder"
+                        src="/file.png"
+                        alt="File"
                         width={64}
                         height={64}
                         className="object-contain"
@@ -28,4 +28,4 @@ function FolderIcon({ text, url }: FolderIconProps) {
     )
 }
 
-export default FolderIcon
+export default FileIcon
