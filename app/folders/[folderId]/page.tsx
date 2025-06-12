@@ -1,8 +1,23 @@
+"use client";
+
 import FileIcon from "@/components/FileIcon";
 import Link from "next/link";
+import { useState } from "react";
 
 
 export default function Home() {
+
+  const [count,setCount] = useState(552677);
+
+  useState(() => {
+    setTimeout(() => {
+      setCount((prevCount) => {
+        const newCount = prevCount - 1;
+        return newCount;
+      });
+    }, 1000);
+  });
+
   return (
     <div className="relative w-screen h-screen overflow-hidden">
       
@@ -39,9 +54,9 @@ export default function Home() {
 
       {/* ——— Folders ——— */}
       <div className="absolute top-1/20 right-8 flex flex-col gap-10 z-30">
-        <FileIcon text="ai news"     url="http://localhost:3000/files/ai-news" />
-        <FileIcon text="internships" url="http://localhost:3000/files/internships" />
-        <FileIcon text="hackathons"  url="http://localhost:3000/files/hackathons" />
+        <FileIcon text="gemini updates"     url="http://localhost:3000/files/gemini" />
+        <FileIcon text="openai tips" url="http://localhost:3000/files/internships" />
+        <FileIcon text="claude hacks"  url="http://localhost:3000/files/hackathons" />
       </div>
 
       {/* ——— Intro Text ——— */}
@@ -53,7 +68,7 @@ export default function Home() {
 
       {/* ——— Timer ——— */}
       <div className="absolute top-[200px] left-155 flex flex-col gap-0 z-30">
-        <h1 className="text-white text-[140px] pixelated-font p-0">38<span className="text-[40px]">.552677</span></h1>
+        <h1 className="text-white text-[140px] pixelated-font p-0">38<span className="text-[40px]">.{count}</span></h1>
         <h1 className="text-white text-[30px] pixelated-font">days till the next drop</h1>
       </div>
     </div>

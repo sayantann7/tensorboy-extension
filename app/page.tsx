@@ -1,8 +1,57 @@
+"use client";
 import FolderIcon from "@/components/FolderIcon";
 import Taskbar from "@/components/Taskbar";
+import { useEffect, useState } from "react";
 
 
 export default function Home() {
+  const [decimalValue, setDecimalValue] = useState(552677);
+  const [currentTime, setCurrentTime] = useState('00:00 AM');
+  const [greeting, setGreeting] = useState('good morning hacker');
+
+  useEffect(() => {
+    // Function to update time
+    function updateTime() {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const formattedHours = (hours % 12) || 12; // Convert 0 to 12 for 12 AM
+      const formattedMinutes = minutes.toString().padStart(2, '0');
+      const timeString = `${formattedHours}:${formattedMinutes} ${ampm}`;
+      setCurrentTime(timeString);
+
+      if (hours >= 5 && hours < 12) {
+        setGreeting('good morning hacker');
+      } else if (hours >= 12 && hours < 18) {
+        setGreeting('good afternoon hacker');
+      } else {
+        setGreeting('good evening hacker');
+      }
+    }
+
+    // Update decimal countdown
+    const countdownInterval = setInterval(() => {
+      setDecimalValue(prevValue => {
+        if (prevValue <= 0) return 999999;
+        return prevValue - 1;
+      });
+    }, 1000);
+
+    // Initial time update
+    updateTime();
+    
+    // Update time every second
+    const timeInterval = setInterval(updateTime, 1000);
+
+    return () => {
+      clearInterval(countdownInterval);
+      clearInterval(timeInterval);
+    };
+  }, []);
+
+  const formattedDecimal = decimalValue.toString().padStart(6, '0');
+
   return (
     <div className="relative w-screen h-screen overflow-hidden">
       
@@ -33,7 +82,7 @@ export default function Home() {
           absolute inset-0
           w-full h-full object-cover
           z-20
-          opacity-3
+          opacity-5
         "
       />
 
@@ -52,12 +101,18 @@ export default function Home() {
       </div>
 
       {/* ——— Timer ——— */}
-      <div className="absolute top-[200px] left-155 flex flex-col gap-0 z-30">
-        <h1 className="text-white text-[140px] pixelated-font p-0">38<span className="text-[40px]">.552677</span></h1>
-        <h1 className="text-white text-[30px] pixelated-font">days till the next drop</h1>
+      <div className="absolute top-[250px] left-[580px] flex flex-col gap-0 z-30">
+        <h1 className="text-white text-[140px] pixelated-font p-0 leading-tight">38<span className="text-[40px]">.{formattedDecimal}</span></h1>
+        <h1 className="text-white text-[30px] pixelated-font -mt-4">days till the next drop</h1>
       </div>
 
-      {/* <Taskbar /> */}
+      <div className="absolute bottom-2 left-8 flex flex-col gap-2 z-30">
+        <h1 className="text-white text-xl pixelated-font mb-8">{greeting}</h1>
+      </div>
+
+       <div className="absolute bottom-2 right-8 flex flex-col gap-2 z-30">
+        <h1 className="text-white text-xl pixelated-font mb-8">{currentTime}</h1>
+      </div>
     </div>
   );
 }
