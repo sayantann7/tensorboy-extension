@@ -75,6 +75,14 @@ export default function Home() {
   const [fileUrl, setFileUrl] = useState('');
   const [fileContent, setFileContent] = useState('');
 
+  // File context menu states
+  const [showFileContextMenu, setShowFileContextMenu] = useState(false);
+  const [fileContextMenuPosition, setFileContextMenuPosition] = useState({ x: 0, y: 0 });
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [newItemRename, setNewItemRename] = useState('');
+
+
   // Load saved settings from localStorage only once on component mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -268,6 +276,88 @@ export default function Home() {
     setShowContextMenu(false);
   };
 
+  // Delete a desktop item
+  const handleDeleteItem = () => {
+    if (!selectedItem) return;
+    
+    const updatedItems = desktopItems.filter(item => item.id !== selectedItem.id);
+    setDesktopItems(updatedItems);
+    
+    // Save to localStorage
+    localStorage.setItem('desktopItems', JSON.stringify(updatedItems));
+    
+    setShowFileContextMenu(false);
+  };
+  
+  // Start rename process
+  const handleStartRename = () => {
+    if (!selectedItem) return;
+    setIsRenaming(true);
+    setNewItemRename(selectedItem.name);
+    setShowFileContextMenu(false);
+  };
+  
+  // Save renamed item
+  const handleSaveRename = () => {
+    if (!selectedItem || !newItemRename) return;
+    
+    const updatedItems = desktopItems.map(item => {
+      if (item.id === selectedItem.id) {
+        return {
+          ...item,
+          name: newItemRename,
+          // Update URL for folders to match the new name
+          ...(item.type === 'folder' ? {
+            url: `/folders/${newItemRename.toLowerCase().replace(/\s+/g, '-')}`
+          } : {})
+        };
+      }
+      return item;
+    });
+    
+    setDesktopItems(updatedItems);
+    
+    // Save to localStorage
+    localStorage.setItem('desktopItems', JSON.stringify(updatedItems));
+    
+    setIsRenaming(false);
+    setSelectedItem(null);
+  };
+
+  // Add click handler to close context menus when clicking outside
+  useEffect(() => {
+    const handleClick = () => {
+      setShowContextMenu(false);
+      setShowFileContextMenu(false);
+      
+      // If user clicks outside while renaming, save the rename
+      if (isRenaming) {
+        handleSaveRename();
+      }
+    };
+
+    window.addEventListener('click', handleClick);
+
+    return () => {
+      window.removeEventListener('click', handleClick);
+    };
+  }, [isRenaming]); // Add isRenaming to dependencies
+
+  // Handle right-click on desktop items
+  const handleItemContextMenu = (e: React.MouseEvent, item: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Only show context menu for user-created items
+    const isDefaultFolder = defaultFolders.some(folder => folder.id === item.id);
+    if (isDefaultFolder) return;
+    
+    setSelectedItem(item);
+    setShowFileContextMenu(true);
+    setFileContextMenuPosition({ x: e.clientX, y: e.clientY });
+    setShowContextMenu(false); // Hide the desktop context menu if it's open
+  };
+
   // Save new item (file or folder)
   const handleSaveNewItem = () => {
     if (!newItemName) {
@@ -428,20 +518,83 @@ export default function Home() {
             left: `${item.position.x}px`,
             top: `${item.position.y}px`
           }}
+          onContextMenu={(e) => handleItemContextMenu(e, item)}
         >
           {item.type === 'file' ? (
-            <FileIcon text={item.name} url={item.url} />
+            isRenaming && selectedItem?.id === item.id ? (
+              <div className="flex flex-col items-center">
+                <input
+                  type="text"
+                  className="w-20 bg-[#333] text-white p-1 border border-white/30 rounded-sm text-center"
+                  value={newItemRename}
+                  onChange={(e) => setNewItemRename(e.target.value)}
+                  autoFocus
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveRename()}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <div className="h-12"></div>
+              </div>
+            ) : (
+              <FileIcon text={item.name} url={item.url} />
+            )
           ) : (
-            <FolderIcon text={item.name} url={item.url} />
+            isRenaming && selectedItem?.id === item.id ? (
+              <div className="flex flex-col items-center">
+                <input
+                  type="text"
+                  className="w-20 bg-[#333] text-white p-1 border border-white/30 rounded-sm text-center"
+                  value={newItemRename}
+                  onChange={(e) => setNewItemRename(e.target.value)}
+                  autoFocus
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveRename()}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <div className="h-12"></div>
+              </div>
+            ) : (
+              <FolderIcon text={item.name} url={item.url} />
+            )
           )}
         </div>
       ))}
 
+      {/* File/Folder Context Menu */}
+      {showFileContextMenu && selectedItem && (
+        <div
+          className="fixed z-[200] bg-[#222] border border-white/30 shadow-lg rounded-sm overflow-hidden"
+          style={{ left: `${fileContextMenuPosition.x}px`, top: `${fileContextMenuPosition.y}px` }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="w-52">
+            <button
+              onClick={handleStartRename}
+              className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+              </svg>
+              Rename
+            </button>
+            <button
+              onClick={handleDeleteItem}
+              className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+              </svg>
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ——— Intro Text ——— */}
       <div className="absolute top-1/20 left-8 flex flex-col gap-2 z-30">
-        <h1 className="text-white text-xl pixelated-font mb-8">welcome to tensor protocol</h1>
-        <h1 className="text-white text-xl pixelated-font">checkout the latest drop <a href="#" target="_blank" className="text-white/50 underline">link</a></h1>
-        <h1 className="text-white text-xl pixelated-font">not subscribed yet? <a href="#" target="_blank" className="text-white/50 underline">sub here</a></h1>
+        <h1 className="text-white text-xl pixelated-font mb-8">made with love by tensorboy</h1>
+        <h1 className="text-white text-xl pixelated-font">checkout the latest drop <a href="https://protocol.tensorboy.com/last-email" target="_blank" className="text-white/50 underline">link</a></h1>
+        <h1 className="text-white text-xl pixelated-font">not subscribed yet? <a href="https://protocol.tensorboy.com" target="_blank" className="text-white/50 underline">sub here</a></h1>
       </div>
 
       {/* ——— Timer ——— */}
