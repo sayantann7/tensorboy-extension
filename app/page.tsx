@@ -542,9 +542,9 @@ export default function Home() {
 
       {/* ——— Default Folders ——— */}
       <div className="absolute top-1/20 right-8 flex flex-col gap-10 z-30">
-        <FolderIcon text="ai news" url="http://localhost:3000/folders/ai-news" />
-        <FolderIcon text="internships" url="http://localhost:3000/folders/internships" />
-        <FolderIcon text="hackathons" url="http://localhost:3000/folders/hackathons" />
+        <FolderIcon text="ai news" url="http://localhost:3000/default-folders/ai-news" />
+        <FolderIcon text="internships" url="http://localhost:3000/default-folders/internships" />
+        <FolderIcon text="hackathons" url="http://localhost:3000/default-folders/hackathons" />
         <SoundboardIcon onClick={() => setShowSoundboard(true)} />
       </div>
 
