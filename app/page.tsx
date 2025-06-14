@@ -347,6 +347,13 @@ export default function Home() {
     setShowDisclaimerModal(false);
   };
 
+  const handlePreviousWallpaper = () => {
+    const prevNumber = wallpaperNumber <= 1 ? 12 : wallpaperNumber - 1;
+    setWallpaperNumber(prevNumber);
+    localStorage.setItem('wallpaperNumber', prevNumber.toString());
+    setShowContextMenu(false);
+  };
+
   return (
     <div className="relative w-screen h-screen overflow-hidden">
 
@@ -501,6 +508,17 @@ export default function Home() {
               Create New Folder
             </button>
             <div className="w-full h-px bg-white/20 my-1"></div>
+            <button
+              onClick={handlePreviousWallpaper}
+              className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="5 15 10 10 21 21"></polyline>
+              </svg>
+              Previous Wallpaper
+            </button>
             <button
               onClick={handleNextWallpaper}
               className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
