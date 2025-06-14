@@ -358,12 +358,17 @@ export default function Home() {
     setShowContextMenu(false); // Hide the desktop context menu if it's open
   };
 
-  // Save new item (file or folder)
+  // ...existing code...
+
+  // Modify the handleSaveNewItem function
   const handleSaveNewItem = () => {
     if (!newItemName) {
       alert('Please enter a name');
       return;
     }
+
+    // Calculate the position for the new item
+    const itemPosition = calculateItemPosition();
 
     if (newItemType === 'file') {
       // For files, handle different file formats
@@ -398,7 +403,7 @@ export default function Home() {
         fileType: fileFormat,
         icon: icon,
         content: fileFormat === 'md' ? fileContent : '',
-        position: newItemPosition
+        position: itemPosition // Use calculated position instead of clicked position
       };
 
       const updatedItems = [...desktopItems, newItem];
@@ -414,7 +419,7 @@ export default function Home() {
         type: newItemType,
         name: newItemName,
         url: `/folders/${newItemName.toLowerCase().replace(/\s+/g, '-')}`,
-        position: newItemPosition
+        position: itemPosition // Use calculated position instead of clicked position
       };
 
       const updatedItems = [...desktopItems, newItem];
@@ -431,6 +436,7 @@ export default function Home() {
     setShowNewItemModal(false);
   };
 
+  // ...existing code...
   // Handle mission timer click
   const handleMissionTimerClick = () => {
     setShowMissionModal(true);
@@ -460,6 +466,39 @@ export default function Home() {
     localStorage.setItem('wallpaperNumber', prevNumber.toString());
     setShowContextMenu(false);
   };
+
+  const [useTimeSelection, setUseTimeSelection] = useState(false);
+
+
+
+  const calculateItemPosition = () => {
+    // Count existing user items
+    const itemCount = desktopItems.length;
+
+    // Each column has 5 items maximum
+    const columnIndex = Math.floor(itemCount / 5);
+    const rowIndex = itemCount % 5;
+
+    // Start positioning from the right side of the screen
+    // For the default column (columnIndex = 0), use the same position as default folders
+    const rightOffset = 250 + (columnIndex * 100); // Use pixels instead of rem units
+
+    // Calculate Y position with appropriate spacing
+    const yPosition = 40 + (rowIndex * 130);
+
+    // Calculate x position from the right edge of the screen
+    // Use window.innerWidth if available, otherwise use a reasonable default
+    const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1024;
+    const xPosition = screenWidth - rightOffset;
+
+    // Ensure the icon stays within screen boundaries
+    return {
+      x: Math.max(100, Math.min(screenWidth - 100, xPosition)), // Keep at least 100px from edges
+      y: yPosition
+    };
+  };
+
+
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
@@ -774,11 +813,50 @@ export default function Home() {
             <div className="mb-4">
               <label className="block text-white pixelated-font mb-2">Mission End Date</label>
               <input
-                type="datetime-local"
+                type="date"
                 className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
-                value={missionEndDate.toISOString().slice(0, 16)}
-                onChange={(e) => setMissionEndDate(new Date(e.target.value))}
+                value={missionEndDate.toISOString().split('T')[0]}
+                onChange={(e) => {
+                  // Keep the time portion of the existing date when changing just the date
+                  const newDate = new Date(e.target.value);
+                  if (!isNaN(newDate.getTime())) {
+                    const hours = missionEndDate.getHours();
+                    const minutes = missionEndDate.getMinutes();
+                    newDate.setHours(hours, minutes, 0, 0);
+                    setMissionEndDate(newDate);
+                  }
+                }}
               />
+            </div>
+
+            <div className="mb-6">
+              <div className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  id="useTimeCheckbox"
+                  className="mr-2 bg-[#333] border border-white/30"
+                  checked={useTimeSelection}
+                  onChange={(e) => setUseTimeSelection(e.target.checked)}
+                />
+                <label htmlFor="useTimeCheckbox" className="text-white pixelated-font">
+                  Include specific time (optional)
+                </label>
+              </div>
+
+              {useTimeSelection && (
+                <input
+                  type="time"
+                  className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
+                  value={`${"0".padStart(2, '0')}:${"0".padStart(2, '0')}`}
+                  onChange={(e) => {
+                    const [hours, minutes] = e.target.value.split(':').map(Number);
+                    const newDate = new Date(missionEndDate);
+                    newDate.setHours(hours, minutes, 0, 0);
+                    setMissionEndDate(newDate);
+                  }}
+                />
+              )}
+
             </div>
 
             <div className="mb-6">
@@ -809,7 +887,6 @@ export default function Home() {
           </div>
         </div>
       )}
-
     </div>
   );
 }
