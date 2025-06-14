@@ -677,7 +677,7 @@ export default function Home() {
               </svg>
               Create New File
             </button>
-            <button
+            {/* <button
               onClick={() => handleCreateNewItem('folder')}
               className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
             >
@@ -685,7 +685,7 @@ export default function Home() {
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
               </svg>
               Create New Folder
-            </button>
+            </button> */}
             <div className="w-full h-px bg-white/20 my-1"></div>
             <button
               onClick={handlePreviousWallpaper}
