@@ -7,8 +7,7 @@ import { useEffect, useState, useRef } from "react";
 export default function Home() {
   const [currentTime, setCurrentTime] = useState('00:00 AM');
   const [greeting, setGreeting] = useState('good morning hacker');
-  const [customWallpaper, setCustomWallpaper] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [wallpaperNumber, setWallpaperNumber] = useState(1);
 
   const [showDisclaimerModal, setShowDisclaimerModal] = useState(true);
   
@@ -62,9 +61,10 @@ export default function Home() {
   // Load saved settings from localStorage only once on component mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedWallpaper = localStorage.getItem('customWallpaper');
-      if (savedWallpaper) {
-        setCustomWallpaper(savedWallpaper);
+      // Load wallpaper number from localStorage
+      const savedWallpaperNumber = localStorage.getItem('wallpaperNumber');
+      if (savedWallpaperNumber) {
+        setWallpaperNumber(parseInt(savedWallpaperNumber, 10));
       }
       
       const savedMissionText = localStorage.getItem('missionText');
@@ -227,124 +227,39 @@ export default function Home() {
 
   // Format seconds as 6 digits (padded with zeros)
   const formattedSeconds = secondsRemaining.toString().padStart(6, '0');
-
-  // Handle file upload
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !file.type.startsWith('image/')) return;
-    
-    // For GIFs, use a different approach to preserve animation
-    if (file.type === 'image/gif') {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        try {
-          const dataUrl = event.target?.result as string;
-          // Make sure data URL includes the correct MIME type
-          if (!dataUrl.startsWith('data:image/gif')) {
-            console.warn('GIF MIME type not correctly preserved');
-          }
-          setCustomWallpaper(dataUrl);
-          localStorage.setItem('customWallpaper', dataUrl);
-        } catch (error) {
-          alert('GIF is too large for storage. Please choose a smaller file.');
-          console.error('Storage error:', error);
-        }
-      };
-      reader.readAsDataURL(file);
-      return;
-    }
-      
-    // For non-GIF images, use canvas compression
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        // Create a canvas to resize the image
-        const canvas = document.createElement('canvas');
-        const maxWidth = 1280;
-        const maxHeight = 720;
-        
-        let width = img.width;
-        let height = img.height;
-        
-        // Calculate new dimensions to maintain aspect ratio
-        if (width > height) {
-          if (width > maxWidth) {
-            height *= maxWidth / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width *= maxHeight / height;
-            height = maxHeight;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, width, height);
-        
-        // Get compressed image as data URL with reduced quality
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
-        
-        try {
-          // Set the compressed image
-          setCustomWallpaper(compressedDataUrl);
-          localStorage.setItem('customWallpaper', compressedDataUrl);
-        } catch (error) {
-          alert('Image is still too large. Please choose a smaller image.');
-          console.error('Storage error:', error);
-        }
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-  };
-
-  // Open file input dialog
-  const handleChangeWallpaper = () => {
-    fileInputRef.current?.click();
-    setShowContextMenu(false);
-  };
-
-  // Reset to default wallpaper
-  const handleResetWallpaper = () => {
-    setCustomWallpaper('');
-    localStorage.removeItem('customWallpaper');
+  
+  // Function to cycle to the next wallpaper
+  const handleNextWallpaper = () => {
+    const nextNumber = wallpaperNumber >= 12 ? 1 : wallpaperNumber + 1;
+    setWallpaperNumber(nextNumber);
+    localStorage.setItem('wallpaperNumber', nextNumber.toString());
     setShowContextMenu(false);
   };
   
   // Handle right-click on background to show context menu
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
-    
-    // Only show context menu if right-clicked directly on background
-    if (e.target === e.currentTarget) {
-      setContextMenuPosition({ x: e.clientX, y: e.clientY });
-      setShowContextMenu(true);
-    }
+    setShowContextMenu(true);
+    setContextMenuPosition({ x: e.clientX, y: e.clientY });
   };
-  
-  // Create new item handlers
+
+  // Function to handle creating new files/folders
   const handleCreateNewItem = (type: 'file' | 'folder') => {
     setNewItemType(type);
-    setNewItemName(type === 'file' ? 'New File' : 'New Folder');
-    setNewItemPosition(contextMenuPosition);
+    setNewItemPosition({ x: contextMenuPosition.x, y: contextMenuPosition.y });
     setShowNewItemModal(true);
     setShowContextMenu(false);
   };
-  
-  // Save new desktop item
+
+  // Save new item (file or folder)
   const handleSaveNewItem = () => {
-    if (!newItemName.trim()) {
-      alert('Please enter a name for the item.');
+    if (!newItemName) {
+      alert('Please enter a name');
       return;
     }
-
+    
     if (newItemType === 'file') {
-      // Handle file creation based on format
+      // For files, handle different file formats
       let icon = '';
       
       // Set appropriate icon based on file type
@@ -454,7 +369,7 @@ export default function Home() {
           Beta Notice
         </div>
       </div>
-      
+
       {/* Modal content */}
       <div className="mb-6">
         <h2 className="text-white text-xl pixelated-font mb-4">Welcome to the Beta Version</h2>
@@ -480,29 +395,16 @@ export default function Home() {
 )}
 
       {/* ——— Background image/video layer with context menu handler ——— */}
-      {customWallpaper && customWallpaper.startsWith('data:image/gif') ? (
-        // Use img element for GIFs to preserve animation
-        <div onContextMenu={handleContextMenu} className="absolute inset-0 z-0">
-          <img
-            src={customWallpaper}
-            alt="Animated Background"
-            className="absolute inset-0 w-full h-full object-cover filter grayscale-[50%] brightness-65 contrast-100"
-          />
-        </div>
-      ) : (
-        // Use background-image for non-GIF images
-        <div
-          onContextMenu={handleContextMenu}
-          className={`
-            absolute inset-0
-            ${!customWallpaper ? 'bg-slate-900' : ''}
-            bg-cover bg-center bg-no-repeat
-            filter grayscale-[50%] brightness-65 contrast-100
-            z-0
-          `}
-          style={customWallpaper ? { backgroundImage: `url(${customWallpaper})` } : { backgroundImage: `url(/background.png)` }}
-        />
-      )}
+      <div
+        onContextMenu={handleContextMenu}
+        className={`
+          absolute inset-0
+          bg-cover bg-center bg-no-repeat
+          filter grayscale-[50%] brightness-65 contrast-100
+          z-0
+        `}
+        style={{ backgroundImage: `url(/wallpapers/${wallpaperNumber}.gif)` }}
+      />
 
       {/* ——— Optional tint on top of the image ——— */}
       <div className="absolute inset-0 bg-black/30 z-10" onContextMenu={handleContextMenu} />
@@ -522,15 +424,6 @@ export default function Home() {
         onContextMenu={handleContextMenu}
       />
 
-      {/* Hidden file input */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleFileChange}
-        accept="image/*"
-        className="hidden"
-      />
-      
       {/* ——— Default Folders ——— */}
       <div className="absolute top-1/20 right-8 flex flex-col gap-10 z-30">
         <FolderIcon text="ai news" url="http://localhost:3000/folders/ai-news" />
@@ -609,7 +502,7 @@ export default function Home() {
             </button>
             <div className="w-full h-px bg-white/20 my-1"></div>
             <button
-              onClick={handleChangeWallpaper}
+              onClick={handleNextWallpaper}
               className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -617,20 +510,8 @@ export default function Home() {
                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
                 <polyline points="21 15 16 10 5 21"></polyline>
               </svg>
-              Change Wallpaper
+              Next Wallpaper
             </button>
-            {customWallpaper && (
-              <button
-                onClick={handleResetWallpaper}
-                className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                  <path d="M3 3v5h5"></path>
-                </svg>
-                Reset Wallpaper
-              </button>
-            )}
           </div>
         </div>
       )}
