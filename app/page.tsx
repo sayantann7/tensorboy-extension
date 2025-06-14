@@ -3,6 +3,8 @@ import FolderIcon from "@/components/FolderIcon";
 import FileIcon from "@/components/FileIcon";
 import Taskbar from "@/components/Taskbar";
 import { useEffect, useState, useRef } from "react";
+import SoundboardIcon from "@/components/SoundboardIcon";
+import Soundboard from "@/components/Soundboard";
 
 export default function Home() {
   const [currentTime, setCurrentTime] = useState('00:00 AM');
@@ -10,7 +12,8 @@ export default function Home() {
   const [wallpaperNumber, setWallpaperNumber] = useState(1);
 
   const [showDisclaimerModal, setShowDisclaimerModal] = useState(true);
-  
+  const [showSoundboard, setShowSoundboard] = useState(false);
+
   // Add new state variables for mission customization
   const [showMissionModal, setShowMissionModal] = useState(false);
   const [missionText, setMissionText] = useState('days till the next drop');
@@ -23,11 +26,11 @@ export default function Home() {
   const [daysRemaining, setDaysRemaining] = useState(38);
   // Replace with seconds remaining
   const [secondsRemaining, setSecondsRemaining] = useState(0);
-  
+
   // Context menu states
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({ x: 0, y: 0 });
-  
+
   // Desktop items state - keep positions but remove drag functionality
   const [desktopItems, setDesktopItems] = useState<Array<{
     id: string;
@@ -39,20 +42,20 @@ export default function Home() {
     content?: string;
     position: { x: number, y: number };
   }>>([]);
-  
+
   // Default folders with positions - initialize without window references
   const [defaultFolders, setDefaultFolders] = useState([
     { id: 'ai-news', name: 'ai news', url: '/folders/ai-news', position: { x: 0, y: 80 } },
     { id: 'internships', name: 'internships', url: '/folders/internships', position: { x: 0, y: 170 } },
     { id: 'hackathons', name: 'hackathons', url: '/folders/hackathons', position: { x: 0, y: 260 } }
   ]);
-  
+
   // New file/folder modal states
   const [showNewItemModal, setShowNewItemModal] = useState(false);
   const [newItemType, setNewItemType] = useState<'file' | 'folder'>('file');
   const [newItemName, setNewItemName] = useState('');
   const [newItemPosition, setNewItemPosition] = useState({ x: 0, y: 0 });
-  
+
   // For file content when creating a new file
   const [fileFormat, setFileFormat] = useState<'link' | 'md'>('link');
   const [fileUrl, setFileUrl] = useState('');
@@ -66,12 +69,12 @@ export default function Home() {
       if (savedWallpaperNumber) {
         setWallpaperNumber(parseInt(savedWallpaperNumber, 10));
       }
-      
+
       const savedMissionText = localStorage.getItem('missionText');
       if (savedMissionText) {
         setMissionText(savedMissionText);
       }
-      
+
       const savedMissionEndDate = localStorage.getItem('missionEndDate');
       if (savedMissionEndDate) {
         const parsedDate = new Date(savedMissionEndDate);
@@ -80,7 +83,7 @@ export default function Home() {
           setMissionEndDate(parsedDate);
         }
       }
-      
+
       // Load desktop items
       const savedDesktopItems = localStorage.getItem('desktopItems');
       if (savedDesktopItems) {
@@ -90,7 +93,7 @@ export default function Home() {
           console.error('Error loading desktop items:', error);
         }
       }
-      
+
       // Load default folder positions
       const savedDefaultFolders = localStorage.getItem('defaultFolders');
       if (savedDefaultFolders) {
@@ -108,29 +111,29 @@ export default function Home() {
     // Only run in browser environment
     if (typeof window !== 'undefined') {
       // Now it's safe to access window properties
-      setDefaultFolders(folders => 
+      setDefaultFolders(folders =>
         folders.map(folder => ({
           ...folder,
-          position: { 
-            x: window.innerWidth - 140, 
-            y: folder.position.y 
+          position: {
+            x: window.innerWidth - 140,
+            y: folder.position.y
           }
         }))
       );
-      
+
       // Also handle window resize if needed
       const handleResize = () => {
-        setDefaultFolders(folders => 
+        setDefaultFolders(folders =>
           folders.map(folder => ({
             ...folder,
-            position: { 
-              x: window.innerWidth - 140, 
-              y: folder.position.y 
+            position: {
+              x: window.innerWidth - 140,
+              y: folder.position.y
             }
           }))
         );
       };
-      
+
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);
     }
@@ -182,21 +185,21 @@ export default function Home() {
     function calculateTimeRemaining() {
       const now = new Date();
       const timeDiff = missionEndDate.getTime() - now.getTime();
-      
+
       if (timeDiff <= 0) {
         // Mission ended
         setDaysRemaining(0);
         setSecondsRemaining(0);
         return;
       }
-      
+
       // Calculate whole days
       const wholeDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-      
+
       // Calculate remaining seconds after removing whole days
       const remainingMs = timeDiff % (1000 * 60 * 60 * 24);
       const seconds = Math.floor(remainingMs / 1000);
-      
+
       setDaysRemaining(wholeDays);
       setSecondsRemaining(seconds);
     }
@@ -217,9 +220,9 @@ export default function Home() {
     const handleClick = () => {
       setShowContextMenu(false);
     };
-    
+
     window.addEventListener('click', handleClick);
-    
+
     return () => {
       window.removeEventListener('click', handleClick);
     };
@@ -227,7 +230,7 @@ export default function Home() {
 
   // Format seconds as 6 digits (padded with zeros)
   const formattedSeconds = secondsRemaining.toString().padStart(6, '0');
-  
+
   // Function to cycle to the next wallpaper
   const handleNextWallpaper = () => {
     const nextNumber = wallpaperNumber >= 12 ? 1 : wallpaperNumber + 1;
@@ -235,7 +238,7 @@ export default function Home() {
     localStorage.setItem('wallpaperNumber', nextNumber.toString());
     setShowContextMenu(false);
   };
-  
+
   // Handle right-click on background to show context menu
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -257,11 +260,11 @@ export default function Home() {
       alert('Please enter a name');
       return;
     }
-    
+
     if (newItemType === 'file') {
       // For files, handle different file formats
       let icon = '';
-      
+
       // Set appropriate icon based on file type
       if (fileFormat === 'link') {
         // Extract domain from URL for favicon
@@ -282,7 +285,7 @@ export default function Home() {
       } else if (fileFormat === 'md') {
         icon = '/markdown.png';
       }
-      
+
       const newItem = {
         id: Date.now().toString(),
         type: newItemType,
@@ -323,12 +326,12 @@ export default function Home() {
     setFileContent('');
     setShowNewItemModal(false);
   };
-  
+
   // Handle mission timer click
   const handleMissionTimerClick = () => {
     setShowMissionModal(true);
   };
-  
+
   // Handle saving mission settings
   const handleSaveMissionSettings = () => {
     // Save to localStorage
@@ -357,49 +360,52 @@ export default function Home() {
   return (
     <div className="relative w-screen h-screen overflow-hidden">
 
+      {/* Soundboard Modal */}
+      <Soundboard isOpen={showSoundboard} onClose={() => setShowSoundboard(false)} />
+
 
       {/* Beta Disclaimer Modal */}
-{showDisclaimerModal && (
-  <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[200]" onClick={closeDisclaimerModal}>
-    <div className="bg-[#222] border border-white/30 p-6 w-[500px] rounded-sm" onClick={(e) => e.stopPropagation()}>
-      {/* Window title bar with Mac-style controls */}
-      <div className="flex items-center mb-6">
-        <div className="flex space-x-2">
-          <button 
-            onClick={closeDisclaimerModal}
-            className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors"
-          />
-          <div className="w-3 h-3 rounded-full bg-yellow-500 opacity-50" />
-          <div className="w-3 h-3 rounded-full bg-green-500 opacity-50" />
-        </div>
-        <div className="flex-1 ml-20 pl-8 text-white font-medium truncate pixelated-font">
-          Beta Notice
-        </div>
-      </div>
+      {showDisclaimerModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[200]" onClick={closeDisclaimerModal}>
+          <div className="bg-[#222] border border-white/30 p-6 w-[500px] rounded-sm" onClick={(e) => e.stopPropagation()}>
+            {/* Window title bar with Mac-style controls */}
+            <div className="flex items-center mb-6">
+              <div className="flex space-x-2">
+                <button
+                  onClick={closeDisclaimerModal}
+                  className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors"
+                />
+                <div className="w-3 h-3 rounded-full bg-yellow-500 opacity-50" />
+                <div className="w-3 h-3 rounded-full bg-green-500 opacity-50" />
+              </div>
+              <div className="flex-1 ml-20 pl-8 text-white font-medium truncate pixelated-font">
+                Beta Notice
+              </div>
+            </div>
 
-      {/* Modal content */}
-      <div className="mb-6">
-        <h2 className="text-white text-xl pixelated-font mb-4">Welcome to the Beta Version</h2>
-        <p className="text-white/80 pixelated-font mb-4">
-          This is a beta version of the extension. Some features may not work as expected.
-        </p>
-        <p className="text-white/80 pixelated-font mb-4">
-          We'd love your help naming this extension! Please submit your suggestion using the link below. Thanks!
-        </p>
-        <p className="text-white/80 pixelated-font mb-6">
-          - tensorboy
-        </p>
-        <a 
-          href="https://form.typeform.com/to/qSpmCYJR" 
-          target="_blank" 
-          className="block w-full bg-[#b8460e] hover:bg-[#a53d0c] text-white pixelated-font text-center px-4 py-3 border border-white/30 transition-colors"
-        >
-          Suggest a Name for This Extension
-        </a>
-      </div>
-    </div>
-  </div>
-)}
+            {/* Modal content */}
+            <div className="mb-6">
+              <h2 className="text-white text-xl pixelated-font mb-4">Welcome to the Beta Version</h2>
+              <p className="text-white/80 pixelated-font mb-4">
+                This is a beta version of the extension. Some features may not work as expected.
+              </p>
+              <p className="text-white/80 pixelated-font mb-4">
+                We'd love your help naming this extension! Please submit your suggestion using the link below. Thanks!
+              </p>
+              <p className="text-white/80 pixelated-font mb-6">
+                - tensorboy
+              </p>
+              <a
+                href="https://form.typeform.com/to/qSpmCYJR"
+                target="_blank"
+                className="block w-full bg-[#b8460e] hover:bg-[#a53d0c] text-white pixelated-font text-center px-4 py-3 border border-white/30 transition-colors"
+              >
+                Suggest a Name for This Extension
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ——— Background image/video layer with context menu handler ——— */}
       <div
@@ -436,15 +442,16 @@ export default function Home() {
         <FolderIcon text="ai news" url="http://localhost:3000/folders/ai-news" />
         <FolderIcon text="internships" url="http://localhost:3000/folders/internships" />
         <FolderIcon text="hackathons" url="http://localhost:3000/folders/hackathons" />
+        <SoundboardIcon onClick={() => setShowSoundboard(true)} />
       </div>
 
       {/* ——— Custom Desktop Items ——— */}
       {desktopItems.map(item => (
-        <div 
-          key={item.id} 
+        <div
+          key={item.id}
           className="absolute z-30"
-          style={{ 
-            left: `${item.position.x}px`, 
+          style={{
+            left: `${item.position.x}px`,
             top: `${item.position.y}px`
           }}
         >
@@ -464,7 +471,7 @@ export default function Home() {
       </div>
 
       {/* ——— Timer ——— */}
-      <div 
+      <div
         className="absolute top-[250px] left-[580px] flex flex-col gap-0 z-30 cursor-pointer hover:opacity-80 transition-opacity"
         onClick={handleMissionTimerClick}
       >
@@ -479,10 +486,10 @@ export default function Home() {
       <div className="absolute bottom-7 right-8 flex items-center gap-4 z-30">
         <h1 className="text-white text-xl pixelated-font">{currentTime}</h1>
       </div>
-      
+
       {/* Context Menu */}
       {showContextMenu && (
-        <div 
+        <div
           className="fixed z-[200] bg-[#222] border border-white/30 shadow-lg rounded-sm overflow-hidden"
           style={{ left: `${contextMenuPosition.x}px`, top: `${contextMenuPosition.y}px` }}
           onClick={(e) => e.stopPropagation()}
@@ -533,7 +540,7 @@ export default function Home() {
           </div>
         </div>
       )}
-      
+
       {/* New Item Modal */}
       {showNewItemModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100]" onClick={() => setShowNewItemModal(false)}>
@@ -541,11 +548,11 @@ export default function Home() {
             <h2 className="text-white text-2xl pixelated-font mb-6">
               Create New {newItemType === 'file' ? 'File' : 'Folder'}
             </h2>
-            
+
             <div className="mb-6">
               <label className="block text-white pixelated-font mb-2">Name</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
                 value={newItemName}
                 onChange={(e) => setNewItemName(e.target.value)}
@@ -553,7 +560,7 @@ export default function Home() {
                 autoFocus
               />
             </div>
-            
+
             {newItemType === 'file' && (
               <div className="mb-6">
                 <label className="block text-white pixelated-font mb-2">File Type</label>
@@ -581,12 +588,12 @@ export default function Home() {
                 </div>
               </div>
             )}
-            
+
             {newItemType === 'file' && fileFormat === 'link' && (
               <div className="mb-6">
                 <label className="block text-white pixelated-font mb-2">URL</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
                   value={fileUrl}
                   onChange={(e) => setFileUrl(e.target.value)}
@@ -594,11 +601,11 @@ export default function Home() {
                 />
               </div>
             )}
-            
+
             {newItemType === 'file' && fileFormat === 'md' && (
               <div className="mb-6">
                 <label className="block text-white pixelated-font mb-2">Content</label>
-                <textarea 
+                <textarea
                   className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm h-40"
                   value={fileContent}
                   onChange={(e) => setFileContent(e.target.value)}
@@ -606,15 +613,15 @@ export default function Home() {
                 />
               </div>
             )}
-            
+
             <div className="flex justify-end gap-4">
-              <button 
+              <button
                 onClick={() => setShowNewItemModal(false)}
                 className="px-4 py-2 bg-black/50 hover:bg-black/70 border border-white/30 text-white pixelated-font transition-colors"
               >
                 cancel
               </button>
-              <button 
+              <button
                 onClick={handleSaveNewItem}
                 className="px-4 py-2 bg-[#b8460e] hover:bg-[#a53d0c] border border-white/30 text-white pixelated-font transition-colors"
               >
@@ -624,42 +631,42 @@ export default function Home() {
           </div>
         </div>
       )}
-      
+
       {/* Mission Settings Modal */}
       {showMissionModal && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
           <div className="bg-[#222] border border-white/30 p-6 w-[500px] rounded-sm">
             <h2 className="text-white text-2xl pixelated-font mb-6">Mission Settings</h2>
-            
+
             <div className="mb-4">
               <label className="block text-white pixelated-font mb-2">Mission End Date</label>
-              <input 
-                type="datetime-local" 
+              <input
+                type="datetime-local"
                 className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
-                value={missionEndDate.toISOString().slice(0, 16)} 
+                value={missionEndDate.toISOString().slice(0, 16)}
                 onChange={(e) => setMissionEndDate(new Date(e.target.value))}
               />
             </div>
-            
+
             <div className="mb-6">
               <label className="block text-white pixelated-font mb-2">Mission Text</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
                 value={missionText}
                 onChange={handleMissionTextChange}
                 placeholder="days till the next drop"
               />
             </div>
-            
+
             <div className="flex justify-end gap-4">
-              <button 
+              <button
                 onClick={() => setShowMissionModal(false)}
                 className="px-4 py-2 bg-black/50 hover:bg-black/70 border border-white/30 text-white pixelated-font transition-colors"
               >
                 cancel
               </button>
-              <button 
+              <button
                 onClick={handleSaveMissionSettings}
                 className="px-4 py-2 bg-[#b8460e] hover:bg-[#a53d0c] border border-white/30 text-white pixelated-font transition-colors"
               >
@@ -669,7 +676,7 @@ export default function Home() {
           </div>
         </div>
       )}
-      
+
     </div>
   );
 }
