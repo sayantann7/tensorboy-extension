@@ -62,59 +62,84 @@ export default function Home() {
   const formattedDecimal = decimalValue.toString().padStart(6, '0');
 
   // Handle file upload
-  // Handle file upload
 const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   const file = e.target.files?.[0];
-  if (file && file.type.startsWith('image/')) {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      // Resize image before storing
-      const img = new Image();
-      img.onload = () => {
-        // Create a canvas to resize the image
-        const canvas = document.createElement('canvas');
-        // Max dimensions to keep file size reasonable
-        const maxWidth = 1280;
-        const maxHeight = 720;
-        
-        let width = img.width;
-        let height = img.height;
-        
-        // Calculate new dimensions to maintain aspect ratio
-        if (width > height) {
-          if (width > maxWidth) {
-            height *= maxWidth / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width *= maxHeight / height;
-            height = maxHeight;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, width, height);
-        
-        // Get compressed image as data URL with reduced quality
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
-        
-        try {
-          // Set the compressed image
-          setCustomWallpaper(compressedDataUrl);
-          localStorage.setItem('customWallpaper', compressedDataUrl);
-        } catch (error) {
-          alert('Image is still too large. Please choose a smaller image.');
-          console.error('Storage error:', error);
-        }
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+  if (!file || !file.type.startsWith('image/')) return;
+  
+  // Size check to avoid exceeding localStorage limits
+  if (file.size > 5 * 1024 * 1024) { // 5MB limit
+    alert('File is too large. Please select an image smaller than 5MB.');
+    return;
   }
+  
+  // For GIFs, use a different approach to preserve animation
+  if (file.type === 'image/gif') {
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const dataUrl = event.target?.result as string;
+      // Make sure data URL includes the correct MIME type
+      if (!dataUrl.startsWith('data:image/gif')) {
+        console.warn('GIF MIME type not correctly preserved');
+      }
+      setCustomWallpaper(dataUrl);
+      localStorage.setItem('customWallpaper', dataUrl);
+    } catch (error) {
+      alert('GIF is too large for storage. Please choose a smaller file.');
+      console.error('Storage error:', error);
+    }
+  };
+  reader.readAsDataURL(file);
+  return;
+}
+  
+  // For non-GIF images, use canvas compression
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const img = new Image();
+    img.onload = () => {
+      // Create a canvas to resize the image
+      const canvas = document.createElement('canvas');
+      const maxWidth = 1280;
+      const maxHeight = 720;
+      
+      let width = img.width;
+      let height = img.height;
+      
+      // Calculate new dimensions to maintain aspect ratio
+      if (width > height) {
+        if (width > maxWidth) {
+          height *= maxWidth / width;
+          width = maxWidth;
+        }
+      } else {
+        if (height > maxHeight) {
+          width *= maxHeight / height;
+          height = maxHeight;
+        }
+      }
+      
+      canvas.width = width;
+      canvas.height = height;
+      
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(img, 0, 0, width, height);
+      
+      // Get compressed image as data URL with reduced quality
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+      
+      try {
+        // Set the compressed image
+        setCustomWallpaper(compressedDataUrl);
+        localStorage.setItem('customWallpaper', compressedDataUrl);
+      } catch (error) {
+        alert('Image is still too large. Please choose a smaller image.');
+        console.error('Storage error:', error);
+      }
+    };
+    img.src = event.target?.result as string;
+  };
+  reader.readAsDataURL(file);
 };
 
   // Open file input dialog
@@ -129,22 +154,32 @@ const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   };
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden">
+  <div className="relative w-screen h-screen overflow-hidden">
 
-      {/* ——— Background image layer ——— */}
+    {/* ——— Background image/video layer ——— */}
+    {customWallpaper && customWallpaper.startsWith('data:image/gif') ? (
+      // Use img element for GIFs to preserve animation
+      <img
+        src={customWallpaper}
+        alt="Animated Background"
+        className="absolute inset-0 w-full h-full object-cover z-0 filter grayscale-[50%] brightness-65 contrast-100"
+      />
+    ) : (
+      // Use background-image for non-GIF images
       <div
         className={`
-    absolute inset-0
-    ${!customWallpaper ? 'bg-slate-900' : ''}
-    bg-cover bg-center bg-no-repeat
-    filter grayscale-[50%] brightness-65 contrast-100
-    z-0
-  `}
+          absolute inset-0
+          ${!customWallpaper ? 'bg-slate-900' : ''}
+          bg-cover bg-center bg-no-repeat
+          filter grayscale-[50%] brightness-65 contrast-100
+          z-0
+        `}
         style={customWallpaper ? { backgroundImage: `url(${customWallpaper})` } : { backgroundImage: `url(/background.png)` }}
       />
+    )}
 
-      {/* ——— Optional tint on top of the image ——— */}
-      <div className="absolute inset-0 bg-black/30 z-10" />
+    {/* ——— Optional tint on top of the image ——— */}
+    <div className="absolute inset-0 bg-black/30 z-10" />
 
       {/* ——— Video layer (untouched by the image filter) ——— */}
       <video
