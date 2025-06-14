@@ -110,7 +110,7 @@ export default function FilePage() {
         {/* File content */}
         {windowState !== 'minimized' && (
           <div className="p-6 bg-white text-gray-800 min-h-[300px] max-h-[75vh] overflow-y-auto">
-            <ReactMarkdown className="prose max-w-none">
+            <ReactMarkdown>
               {fileData.content}
             </ReactMarkdown>
           </div>
