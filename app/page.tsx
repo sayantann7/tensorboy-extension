@@ -126,12 +126,6 @@ export default function Home() {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
     
-    // Size check to avoid exceeding localStorage limits
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      alert('File is too large. Please select an image smaller than 5MB.');
-      return;
-    }
-    
     // For GIFs, use a different approach to preserve animation
     if (file.type === 'image/gif') {
       const reader = new FileReader();
