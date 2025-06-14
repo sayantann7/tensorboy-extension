@@ -5,6 +5,7 @@ import Taskbar from "@/components/Taskbar";
 import { useEffect, useState, useRef } from "react";
 import SoundboardIcon from "@/components/SoundboardIcon";
 import Soundboard from "@/components/Soundboard";
+import DisclaimerModal from "@/components/DisclaimerModal";
 
 export default function Home() {
   const [currentTime, setCurrentTime] = useState('00:00 AM');
@@ -18,12 +19,12 @@ export default function Home() {
   useEffect(() => {
     // Check localStorage only on client-side
     const hasSeenDisclaimer = localStorage.getItem('hasSeenDisclaimer');
-
+    
     if (!hasSeenDisclaimer) {
       setShowDisclaimerModal(true);
       localStorage.setItem('hasSeenDisclaimer', 'true');
     }
-
+    
     setHasCheckedStorage(true);
   }, []);
 
@@ -373,330 +374,283 @@ export default function Home() {
   return (
     <div className="relative w-screen h-screen overflow-hidden">
 
-      {hasCheckedStorage && (
-        <>
-
-          {/* Soundboard Modal */}
-          <Soundboard isOpen={showSoundboard} onClose={() => setShowSoundboard(false)} />
+      {/* Soundboard Modal */}
+      <Soundboard isOpen={showSoundboard} onClose={() => setShowSoundboard(false)} />
 
 
-          {/* Beta Disclaimer Modal */}
-          {showDisclaimerModal && (
-            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[200]" onClick={closeDisclaimerModal}>
-              <div className="bg-[#222] border border-white/30 p-6 w-[500px] rounded-sm" onClick={(e) => e.stopPropagation()}>
-                {/* Window title bar with Mac-style controls */}
-                <div className="flex items-center mb-6">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={closeDisclaimerModal}
-                      className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors"
-                    />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500 opacity-50" />
-                    <div className="w-3 h-3 rounded-full bg-green-500 opacity-50" />
-                  </div>
-                  <div className="flex-1 ml-20 pl-8 text-white font-medium truncate pixelated-font">
-                    Beta Notice
-                  </div>
-                </div>
+      {/* Beta Disclaimer Modal */}
+      <DisclaimerModal onClose={closeDisclaimerModal} />
 
-                {/* Modal content */}
-                <div className="mb-6">
-                  <h2 className="text-white text-xl pixelated-font mb-4">Welcome to the Beta Version</h2>
-                  <p className="text-white/80 pixelated-font mb-4">
-                    This is a beta version of the extension. Some features may not work as expected.
-                  </p>
-                  <p className="text-white/80 pixelated-font mb-4">
-                    We'd love your help naming this extension! Please submit your suggestion using the link below. Thanks!
-                  </p>
-                  <p className="text-white/80 pixelated-font mb-6">
-                    - tensorboy
-                  </p>
-                  <a
-                    href="https://form.typeform.com/to/qSpmCYJR"
-                    target="_blank"
-                    className="block w-full bg-[#b8460e] hover:bg-[#a53d0c] text-white pixelated-font text-center px-4 py-3 border border-white/30 transition-colors"
-                  >
-                    Suggest a Name for This Extension
-                  </a>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ——— Background image/video layer with context menu handler ——— */}
-          <div
-            onContextMenu={handleContextMenu}
-            className={`
+      {/* ——— Background image/video layer with context menu handler ——— */}
+      <div
+        onContextMenu={handleContextMenu}
+        className={`
           absolute inset-0
           bg-cover bg-center bg-no-repeat
           filter grayscale-[50%] brightness-65 contrast-100
           z-0
         `}
-            style={{ backgroundImage: `url(/wallpapers/${wallpaperNumber}.gif)` }}
-          />
+        style={{ backgroundImage: `url(/wallpapers/${wallpaperNumber}.gif)` }}
+      />
 
-          {/* ——— Optional tint on top of the image ——— */}
-          <div className="absolute inset-0 bg-black/30 z-10" onContextMenu={handleContextMenu} />
+      {/* ——— Optional tint on top of the image ——— */}
+      <div className="absolute inset-0 bg-black/30 z-10" onContextMenu={handleContextMenu} />
 
-          {/* ——— Video layer (untouched by the image filter) ——— */}
-          <video
-            src="/bg-video.mp4"
-            autoPlay
-            loop
-            muted
-            className="
+      {/* ——— Video layer (untouched by the image filter) ——— */}
+      <video
+        src="/bg-video.mp4"
+        autoPlay
+        loop
+        muted
+        className="
           absolute inset-0
           w-full h-full object-cover
           z-20
           opacity-5
         "
-            onContextMenu={handleContextMenu}
-          />
+        onContextMenu={handleContextMenu}
+      />
 
-          {/* ——— Default Folders ——— */}
-          <div className="absolute top-1/20 right-8 flex flex-col gap-10 z-30">
-            <FolderIcon text="ai news" url="http://localhost:3000/folders/ai-news" />
-            <FolderIcon text="internships" url="http://localhost:3000/folders/internships" />
-            <FolderIcon text="hackathons" url="http://localhost:3000/folders/hackathons" />
-            <SoundboardIcon onClick={() => setShowSoundboard(true)} />
-          </div>
+      {/* ——— Default Folders ——— */}
+      <div className="absolute top-1/20 right-8 flex flex-col gap-10 z-30">
+        <FolderIcon text="ai news" url="http://localhost:3000/folders/ai-news" />
+        <FolderIcon text="internships" url="http://localhost:3000/folders/internships" />
+        <FolderIcon text="hackathons" url="http://localhost:3000/folders/hackathons" />
+        <SoundboardIcon onClick={() => setShowSoundboard(true)} />
+      </div>
 
-          {/* ——— Custom Desktop Items ——— */}
-          {desktopItems.map(item => (
-            <div
-              key={item.id}
-              className="absolute z-30"
-              style={{
-                left: `${item.position.x}px`,
-                top: `${item.position.y}px`
-              }}
-            >
-              {item.type === 'file' ? (
-                <FileIcon text={item.name} url={item.url} />
-              ) : (
-                <FolderIcon text={item.name} url={item.url} />
-              )}
-            </div>
-          ))}
-
-          {/* ——— Intro Text ——— */}
-          <div className="absolute top-1/20 left-8 flex flex-col gap-2 z-30">
-            <h1 className="text-white text-xl pixelated-font mb-8">welcome to tensor protocol</h1>
-            <h1 className="text-white text-xl pixelated-font">checkout the latest drop <a href="#" target="_blank" className="text-white/50 underline">link</a></h1>
-            <h1 className="text-white text-xl pixelated-font">not subscribed yet? <a href="#" target="_blank" className="text-white/50 underline">sub here</a></h1>
-          </div>
-
-          {/* ——— Timer ——— */}
-          <div
-            className="absolute top-[250px] left-[580px] flex flex-col gap-0 z-30 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={handleMissionTimerClick}
-          >
-            <h1 className="text-white text-[140px] pixelated-font p-0 leading-tight">{daysRemaining}<span className="text-[40px]">.{formattedSeconds}</span></h1>
-            <h1 className="text-white text-[30px] pixelated-font -mt-4">{missionText}</h1>
-          </div>
-
-          <div className="absolute bottom-2 left-8 flex flex-col gap-2 z-30">
-            <h1 className="text-white text-xl pixelated-font mb-8">{greeting}</h1>
-          </div>
-
-          <div className="absolute bottom-7 right-8 flex items-center gap-4 z-30">
-            <h1 className="text-white text-xl pixelated-font">{currentTime}</h1>
-          </div>
-
-          {/* Context Menu */}
-          {showContextMenu && (
-            <div
-              className="fixed z-[200] bg-[#222] border border-white/30 shadow-lg rounded-sm overflow-hidden"
-              style={{ left: `${contextMenuPosition.x}px`, top: `${contextMenuPosition.y}px` }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="w-52">
-                <button
-                  onClick={() => handleCreateNewItem('file')}
-                  className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                  </svg>
-                  Create New File
-                </button>
-                <button
-                  onClick={() => handleCreateNewItem('folder')}
-                  className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                  </svg>
-                  Create New Folder
-                </button>
-                <div className="w-full h-px bg-white/20 my-1"></div>
-                <button
-                  onClick={handlePreviousWallpaper}
-                  className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <polyline points="5 15 10 10 21 21"></polyline>
-                  </svg>
-                  Previous Wallpaper
-                </button>
-                <button
-                  onClick={handleNextWallpaper}
-                  className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                    <polyline points="21 15 16 10 5 21"></polyline>
-                  </svg>
-                  Next Wallpaper
-                </button>
-              </div>
-            </div>
+      {/* ——— Custom Desktop Items ——— */}
+      {desktopItems.map(item => (
+        <div
+          key={item.id}
+          className="absolute z-30"
+          style={{
+            left: `${item.position.x}px`,
+            top: `${item.position.y}px`
+          }}
+        >
+          {item.type === 'file' ? (
+            <FileIcon text={item.name} url={item.url} />
+          ) : (
+            <FolderIcon text={item.name} url={item.url} />
           )}
+        </div>
+      ))}
 
-          {/* New Item Modal */}
-          {showNewItemModal && (
-            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100]" onClick={() => setShowNewItemModal(false)}>
-              <div className="bg-[#222] border border-white/30 p-6 w-[400px] rounded-sm" onClick={(e) => e.stopPropagation()}>
-                <h2 className="text-white text-2xl pixelated-font mb-6">
-                  Create New {newItemType === 'file' ? 'File' : 'Folder'}
-                </h2>
+      {/* ——— Intro Text ——— */}
+      <div className="absolute top-1/20 left-8 flex flex-col gap-2 z-30">
+        <h1 className="text-white text-xl pixelated-font mb-8">welcome to tensor protocol</h1>
+        <h1 className="text-white text-xl pixelated-font">checkout the latest drop <a href="#" target="_blank" className="text-white/50 underline">link</a></h1>
+        <h1 className="text-white text-xl pixelated-font">not subscribed yet? <a href="#" target="_blank" className="text-white/50 underline">sub here</a></h1>
+      </div>
 
-                <div className="mb-6">
-                  <label className="block text-white pixelated-font mb-2">Name</label>
-                  <input
-                    type="text"
-                    className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
-                    value={newItemName}
-                    onChange={(e) => setNewItemName(e.target.value)}
-                    placeholder={newItemType === 'file' ? 'New File' : 'New Folder'}
-                    autoFocus
-                  />
-                </div>
+      {/* ——— Timer ——— */}
+      <div
+        className="absolute top-[250px] left-[580px] flex flex-col gap-0 z-30 cursor-pointer hover:opacity-80 transition-opacity"
+        onClick={handleMissionTimerClick}
+      >
+        <h1 className="text-white text-[140px] pixelated-font p-0 leading-tight">{daysRemaining}<span className="text-[40px]">.{formattedSeconds}</span></h1>
+        <h1 className="text-white text-[30px] pixelated-font -mt-4">{missionText}</h1>
+      </div>
 
-                {newItemType === 'file' && (
-                  <div className="mb-6">
-                    <label className="block text-white pixelated-font mb-2">File Type</label>
-                    <div className="flex gap-4">
-                      <label className="flex items-center text-white">
-                        <input
-                          type="radio"
-                          name="fileType"
-                          checked={fileFormat === 'link'}
-                          onChange={() => setFileFormat('link')}
-                          className="mr-2"
-                        />
-                        Link
-                      </label>
-                      <label className="flex items-center text-white">
-                        <input
-                          type="radio"
-                          name="fileType"
-                          checked={fileFormat === 'md'}
-                          onChange={() => setFileFormat('md')}
-                          className="mr-2"
-                        />
-                        Markdown
-                      </label>
-                    </div>
-                  </div>
-                )}
+      <div className="absolute bottom-2 left-8 flex flex-col gap-2 z-30">
+        <h1 className="text-white text-xl pixelated-font mb-8">{greeting}</h1>
+      </div>
 
-                {newItemType === 'file' && fileFormat === 'link' && (
-                  <div className="mb-6">
-                    <label className="block text-white pixelated-font mb-2">URL</label>
+      <div className="absolute bottom-7 right-8 flex items-center gap-4 z-30">
+        <h1 className="text-white text-xl pixelated-font">{currentTime}</h1>
+      </div>
+
+      {/* Context Menu */}
+      {showContextMenu && (
+        <div
+          className="fixed z-[200] bg-[#222] border border-white/30 shadow-lg rounded-sm overflow-hidden"
+          style={{ left: `${contextMenuPosition.x}px`, top: `${contextMenuPosition.y}px` }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="w-52">
+            <button
+              onClick={() => handleCreateNewItem('file')}
+              className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              Create New File
+            </button>
+            <button
+              onClick={() => handleCreateNewItem('folder')}
+              className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+              </svg>
+              Create New Folder
+            </button>
+            <div className="w-full h-px bg-white/20 my-1"></div>
+            <button
+              onClick={handlePreviousWallpaper}
+              className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="5 15 10 10 21 21"></polyline>
+              </svg>
+              Previous Wallpaper
+            </button>
+            <button
+              onClick={handleNextWallpaper}
+              className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              Next Wallpaper
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* New Item Modal */}
+      {showNewItemModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100]" onClick={() => setShowNewItemModal(false)}>
+          <div className="bg-[#222] border border-white/30 p-6 w-[400px] rounded-sm" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-white text-2xl pixelated-font mb-6">
+              Create New {newItemType === 'file' ? 'File' : 'Folder'}
+            </h2>
+
+            <div className="mb-6">
+              <label className="block text-white pixelated-font mb-2">Name</label>
+              <input
+                type="text"
+                className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
+                value={newItemName}
+                onChange={(e) => setNewItemName(e.target.value)}
+                placeholder={newItemType === 'file' ? 'New File' : 'New Folder'}
+                autoFocus
+              />
+            </div>
+
+            {newItemType === 'file' && (
+              <div className="mb-6">
+                <label className="block text-white pixelated-font mb-2">File Type</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center text-white">
                     <input
-                      type="text"
-                      className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
-                      value={fileUrl}
-                      onChange={(e) => setFileUrl(e.target.value)}
-                      placeholder="https://example.com"
+                      type="radio"
+                      name="fileType"
+                      checked={fileFormat === 'link'}
+                      onChange={() => setFileFormat('link')}
+                      className="mr-2"
                     />
-                  </div>
-                )}
-
-                {newItemType === 'file' && fileFormat === 'md' && (
-                  <div className="mb-6">
-                    <label className="block text-white pixelated-font mb-2">Content</label>
-                    <textarea
-                      className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm h-40"
-                      value={fileContent}
-                      onChange={(e) => setFileContent(e.target.value)}
-                      placeholder="# Markdown content here"
+                    Link
+                  </label>
+                  <label className="flex items-center text-white">
+                    <input
+                      type="radio"
+                      name="fileType"
+                      checked={fileFormat === 'md'}
+                      onChange={() => setFileFormat('md')}
+                      className="mr-2"
                     />
-                  </div>
-                )}
-
-                <div className="flex justify-end gap-4">
-                  <button
-                    onClick={() => setShowNewItemModal(false)}
-                    className="px-4 py-2 bg-black/50 hover:bg-black/70 border border-white/30 text-white pixelated-font transition-colors"
-                  >
-                    cancel
-                  </button>
-                  <button
-                    onClick={handleSaveNewItem}
-                    className="px-4 py-2 bg-[#b8460e] hover:bg-[#a53d0c] border border-white/30 text-white pixelated-font transition-colors"
-                  >
-                    create
-                  </button>
+                    Markdown
+                  </label>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Mission Settings Modal */}
-          {showMissionModal && (
-            <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
-              <div className="bg-[#222] border border-white/30 p-6 w-[500px] rounded-sm">
-                <h2 className="text-white text-2xl pixelated-font mb-6">Mission Settings</h2>
-
-                <div className="mb-4">
-                  <label className="block text-white pixelated-font mb-2">Mission End Date</label>
-                  <input
-                    type="datetime-local"
-                    className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
-                    value={missionEndDate.toISOString().slice(0, 16)}
-                    onChange={(e) => setMissionEndDate(new Date(e.target.value))}
-                  />
-                </div>
-
-                <div className="mb-6">
-                  <label className="block text-white pixelated-font mb-2">Mission Text</label>
-                  <input
-                    type="text"
-                    className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
-                    value={missionText}
-                    onChange={handleMissionTextChange}
-                    placeholder="days till the next drop"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-4">
-                  <button
-                    onClick={() => setShowMissionModal(false)}
-                    className="px-4 py-2 bg-black/50 hover:bg-black/70 border border-white/30 text-white pixelated-font transition-colors"
-                  >
-                    cancel
-                  </button>
-                  <button
-                    onClick={handleSaveMissionSettings}
-                    className="px-4 py-2 bg-[#b8460e] hover:bg-[#a53d0c] border border-white/30 text-white pixelated-font transition-colors"
-                  >
-                    save changes
-                  </button>
-                </div>
+            {newItemType === 'file' && fileFormat === 'link' && (
+              <div className="mb-6">
+                <label className="block text-white pixelated-font mb-2">URL</label>
+                <input
+                  type="text"
+                  className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
+                  value={fileUrl}
+                  onChange={(e) => setFileUrl(e.target.value)}
+                  placeholder="https://example.com"
+                />
               </div>
+            )}
+
+            {newItemType === 'file' && fileFormat === 'md' && (
+              <div className="mb-6">
+                <label className="block text-white pixelated-font mb-2">Content</label>
+                <textarea
+                  className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm h-40"
+                  value={fileContent}
+                  onChange={(e) => setFileContent(e.target.value)}
+                  placeholder="# Markdown content here"
+                />
+              </div>
+            )}
+
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowNewItemModal(false)}
+                className="px-4 py-2 bg-black/50 hover:bg-black/70 border border-white/30 text-white pixelated-font transition-colors"
+              >
+                cancel
+              </button>
+              <button
+                onClick={handleSaveNewItem}
+                className="px-4 py-2 bg-[#b8460e] hover:bg-[#a53d0c] border border-white/30 text-white pixelated-font transition-colors"
+              >
+                create
+              </button>
             </div>
-          )}
-        </>
+          </div>
+        </div>
+      )}
+
+      {/* Mission Settings Modal */}
+      {showMissionModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
+          <div className="bg-[#222] border border-white/30 p-6 w-[500px] rounded-sm">
+            <h2 className="text-white text-2xl pixelated-font mb-6">Mission Settings</h2>
+
+            <div className="mb-4">
+              <label className="block text-white pixelated-font mb-2">Mission End Date</label>
+              <input
+                type="datetime-local"
+                className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
+                value={missionEndDate.toISOString().slice(0, 16)}
+                onChange={(e) => setMissionEndDate(new Date(e.target.value))}
+              />
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-white pixelated-font mb-2">Mission Text</label>
+              <input
+                type="text"
+                className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
+                value={missionText}
+                onChange={handleMissionTextChange}
+                placeholder="days till the next drop"
+              />
+            </div>
+
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={() => setShowMissionModal(false)}
+                className="px-4 py-2 bg-black/50 hover:bg-black/70 border border-white/30 text-white pixelated-font transition-colors"
+              >
+                cancel
+              </button>
+              <button
+                onClick={handleSaveMissionSettings}
+                className="px-4 py-2 bg-[#b8460e] hover:bg-[#a53d0c] border border-white/30 text-white pixelated-font transition-colors"
+              >
+                save changes
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
-
-
   );
 }
