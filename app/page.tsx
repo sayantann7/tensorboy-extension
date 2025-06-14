@@ -4,7 +4,6 @@ import Taskbar from "@/components/Taskbar";
 import { useEffect, useState, useRef } from "react";
 
 export default function Home() {
-  const [decimalValue, setDecimalValue] = useState(552677);
   const [currentTime, setCurrentTime] = useState('00:00 AM');
   const [greeting, setGreeting] = useState('good morning hacker');
   const [customWallpaper, setCustomWallpaper] = useState('');
@@ -20,6 +19,11 @@ export default function Home() {
     return date;
   });
   const [daysRemaining, setDaysRemaining] = useState(38);
+  // Replace with seconds remaining
+  const [secondsRemaining, setSecondsRemaining] = useState(0);
+  
+  // Add state for wallpaper modal
+  const [showWallpaperModal, setShowWallpaperModal] = useState(false);
 
   // Load saved settings from localStorage only once on component mount
   useEffect(() => {
@@ -78,47 +82,55 @@ export default function Home() {
     };
   }, []); // Empty dependency array - only run once on mount
 
-  // Separate effect for countdown
+  // Effect for mission timer calculation - update every second
   useEffect(() => {
-    const countdownInterval = setInterval(() => {
-      setDecimalValue(prevValue => {
-        if (prevValue <= 0) return 999999;
-        return prevValue - 1;
-      });
-    }, 1000);
-
-    return () => {
-      clearInterval(countdownInterval);
-    };
-  }, []); // Empty dependency array - only run once on mount
-
-  // Separate effect just for days calculation
-  useEffect(() => {
-    // Function to calculate days remaining
-    function calculateDaysRemaining() {
+    // Function to calculate time remaining with seconds
+    function calculateTimeRemaining() {
       const now = new Date();
       const timeDiff = missionEndDate.getTime() - now.getTime();
-      const daysLeft = Math.max(0, Math.ceil(timeDiff / (1000 * 60 * 60 * 24)));
-      setDaysRemaining(daysLeft);
+      
+      if (timeDiff <= 0) {
+        // Mission ended
+        setDaysRemaining(0);
+        setSecondsRemaining(0);
+        return;
+      }
+      
+      // Calculate whole days
+      const wholeDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+      
+      // Calculate remaining seconds after removing whole days
+      const remainingMs = timeDiff % (1000 * 60 * 60 * 24);
+      const seconds = Math.floor(remainingMs / 1000);
+      
+      setDaysRemaining(wholeDays);
+      setSecondsRemaining(seconds);
     }
 
     // Initial calculation
-    calculateDaysRemaining();
+    calculateTimeRemaining();
 
-    // Update calculation every minute
-    const daysInterval = setInterval(calculateDaysRemaining, 60000);
+    // Update calculation every second
+    const timerInterval = setInterval(calculateTimeRemaining, 1000);
 
     return () => {
-      clearInterval(daysInterval);
+      clearInterval(timerInterval);
     };
   }, [missionEndDate]); // Only recalculate when mission end date changes
 
-  const formattedDecimal = decimalValue.toString().padStart(6, '0');
+  // Format seconds as 6 digits (padded with zeros)
+  const formattedSeconds = secondsRemaining.toString().padStart(6, '0');
 
   // Handle file upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith('image/')) return;
+    
+    // Size check to avoid exceeding localStorage limits
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      alert('File is too large. Please select an image smaller than 5MB.');
+      return;
+    }
     
     // For GIFs, use a different approach to preserve animation
     if (file.type === 'image/gif') {
@@ -132,6 +144,7 @@ export default function Home() {
           }
           setCustomWallpaper(dataUrl);
           localStorage.setItem('customWallpaper', dataUrl);
+          setShowWallpaperModal(false); // Close modal after setting wallpaper
         } catch (error) {
           alert('GIF is too large for storage. Please choose a smaller file.');
           console.error('Storage error:', error);
@@ -180,6 +193,7 @@ export default function Home() {
           // Set the compressed image
           setCustomWallpaper(compressedDataUrl);
           localStorage.setItem('customWallpaper', compressedDataUrl);
+          setShowWallpaperModal(false); // Close modal after setting wallpaper
         } catch (error) {
           alert('Image is still too large. Please choose a smaller image.');
           console.error('Storage error:', error);
@@ -199,6 +213,18 @@ export default function Home() {
   const handleResetWallpaper = () => {
     setCustomWallpaper('');
     localStorage.removeItem('customWallpaper');
+    setShowWallpaperModal(false); // Close modal after resetting wallpaper
+  };
+  
+  // Toggle wallpaper modal
+  const handleBackgroundClick = (e: React.MouseEvent) => {
+    // Prevent click from bubbling to other elements
+    e.stopPropagation();
+    
+    // Only open modal if clicked directly on background (not on content)
+    if (e.target === e.currentTarget) {
+      setShowWallpaperModal(true);
+    }
   };
   
   // Handle mission timer click
@@ -212,9 +238,6 @@ export default function Home() {
     localStorage.setItem('missionText', missionText);
     localStorage.setItem('missionEndDate', missionEndDate.toISOString());
     setShowMissionModal(false);
-    
-    // Force a re-render by creating a new string reference
-    setMissionText(current => current === '' ? current : current + '');
   };
 
   // Function to handle direct text changes from modal
@@ -225,30 +248,34 @@ export default function Home() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      {/* ——— Background image/video layer ——— */}
+      {/* ——— Background image/video layer with click handler ——— */}
       {customWallpaper && customWallpaper.startsWith('data:image/gif') ? (
         // Use img element for GIFs to preserve animation
-        <img
-          src={customWallpaper}
-          alt="Animated Background"
-          className="absolute inset-0 w-full h-full object-cover z-0 filter grayscale-[50%] brightness-65 contrast-100"
-        />
+        <div onClick={handleBackgroundClick} className="absolute inset-0 z-0">
+          <img
+            src={customWallpaper}
+            alt="Animated Background"
+            className="absolute inset-0 w-full h-full object-cover filter grayscale-[50%] brightness-65 contrast-100"
+          />
+        </div>
       ) : (
         // Use background-image for non-GIF images
         <div
+          onClick={handleBackgroundClick}
           className={`
             absolute inset-0
             ${!customWallpaper ? 'bg-slate-900' : ''}
             bg-cover bg-center bg-no-repeat
             filter grayscale-[50%] brightness-65 contrast-100
             z-0
+            cursor-pointer
           `}
           style={customWallpaper ? { backgroundImage: `url(${customWallpaper})` } : { backgroundImage: `url(/background.png)` }}
         />
       )}
 
       {/* ——— Optional tint on top of the image ——— */}
-      <div className="absolute inset-0 bg-black/30 z-10" />
+      <div className="absolute inset-0 bg-black/30 z-10" onClick={handleBackgroundClick} />
 
       {/* ——— Video layer (untouched by the image filter) ——— */}
       <video
@@ -262,6 +289,7 @@ export default function Home() {
           z-20
           opacity-5
         "
+        onClick={handleBackgroundClick}
       />
 
       {/* Hidden file input */}
@@ -272,24 +300,6 @@ export default function Home() {
         accept="image/*"
         className="hidden"
       />
-
-      {/* Wallpaper control buttons */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex gap-4 z-50">
-        <button
-          onClick={handleChangeWallpaper}
-          className="px-3 py-1 bg-black/50 hover:bg-black/70 border border-white/30 text-white text-sm pixelated-font transition-colors"
-        >
-          change wallpaper
-        </button>
-        {customWallpaper && (
-          <button
-            onClick={handleResetWallpaper}
-            className="px-3 py-1 bg-black/50 hover:bg-black/70 border border-white/30 text-white text-sm pixelated-font transition-colors"
-          >
-            reset wallpaper
-          </button>
-        )}
-      </div>
 
       {/* ——— Folders ——— */}
       <div className="absolute top-1/20 right-8 flex flex-col gap-10 z-30">
@@ -310,17 +320,51 @@ export default function Home() {
         className="absolute top-[250px] left-[580px] flex flex-col gap-0 z-30 cursor-pointer hover:opacity-80 transition-opacity"
         onClick={handleMissionTimerClick}
       >
-        <h1 className="text-white text-[140px] pixelated-font p-0 leading-tight">{daysRemaining}<span className="text-[40px]">.{formattedDecimal}</span></h1>
+        <h1 className="text-white text-[140px] pixelated-font p-0 leading-tight">{daysRemaining}<span className="text-[40px]">.{formattedSeconds}</span></h1>
         <h1 className="text-white text-[30px] pixelated-font -mt-4">{missionText}</h1>
       </div>
 
-      <div className="absolute bottom-2 left-8 flex flex-col gap-2 z-30">
+      <div className="absolute bottom-0 left-8 flex flex-col gap-2 z-30">
         <h1 className="text-white text-xl pixelated-font mb-8">{greeting}</h1>
       </div>
 
-      <div className="absolute bottom-2 right-8 flex flex-col gap-2 z-30">
-        <h1 className="text-white text-xl pixelated-font mb-8">{currentTime}</h1>
+      <div className="absolute bottom-7 right-8 flex items-center gap-4 z-30">
+        <h1 className="text-white text-xl pixelated-font">{currentTime}</h1>
       </div>
+      
+      {/* Wallpaper Modal */}
+      {showWallpaperModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[100]" onClick={() => setShowWallpaperModal(false)}>
+          <div className="bg-[#222] border border-white/30 p-6 w-[400px] rounded-sm" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-white text-2xl pixelated-font mb-6">Wallpaper Settings</h2>
+            
+            <div className="flex flex-col gap-4">
+              <button
+                onClick={handleChangeWallpaper}
+                className="w-full px-4 py-3 text-center text-white pixelated-font bg-black/50 hover:bg-black/70 border border-white/30 rounded-sm transition-colors"
+              >
+                change wallpaper
+              </button>
+              
+              {customWallpaper && (
+                <button
+                  onClick={handleResetWallpaper}
+                  className="w-full px-4 py-3 text-center text-white pixelated-font bg-black/50 hover:bg-black/70 border border-white/30 rounded-sm transition-colors"
+                >
+                  reset wallpaper
+                </button>
+              )}
+            </div>
+            
+            <button 
+              onClick={() => setShowWallpaperModal(false)}
+              className="w-full mt-6 px-4 py-2 text-center text-white pixelated-font hover:bg-black/50 transition-colors"
+            >
+              cancel
+            </button>
+          </div>
+        </div>
+      )}
       
       {/* Mission Settings Modal */}
       {showMissionModal && (

@@ -20,7 +20,7 @@ function FolderIcon({ text, url }: FolderIconProps) {
                         className="object-contain"
                     />
                 </div>
-                <div className="mt-0 text-center text-white text-sm pixelated-font bg-black bg-opacity-50 px-2 py-1">
+                <div className="mt-0 text-center text-white text-sm pixelated-font bg-opacity-50 px-2 py-1">
                     {text}
                 </div>
             </div>
