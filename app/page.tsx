@@ -19,12 +19,12 @@ export default function Home() {
   useEffect(() => {
     // Check localStorage only on client-side
     const hasSeenDisclaimer = localStorage.getItem('hasSeenDisclaimer');
-    
+
     if (!hasSeenDisclaimer) {
       setShowDisclaimerModal(true);
       localStorage.setItem('hasSeenDisclaimer', 'true');
     }
-    
+
     setHasCheckedStorage(true);
   }, []);
 
@@ -279,16 +279,16 @@ export default function Home() {
   // Delete a desktop item
   const handleDeleteItem = () => {
     if (!selectedItem) return;
-    
+
     const updatedItems = desktopItems.filter(item => item.id !== selectedItem.id);
     setDesktopItems(updatedItems);
-    
+
     // Save to localStorage
     localStorage.setItem('desktopItems', JSON.stringify(updatedItems));
-    
+
     setShowFileContextMenu(false);
   };
-  
+
   // Start rename process
   const handleStartRename = () => {
     if (!selectedItem) return;
@@ -296,11 +296,11 @@ export default function Home() {
     setNewItemRename(selectedItem.name);
     setShowFileContextMenu(false);
   };
-  
+
   // Save renamed item
   const handleSaveRename = () => {
     if (!selectedItem || !newItemRename) return;
-    
+
     const updatedItems = desktopItems.map(item => {
       if (item.id === selectedItem.id) {
         return {
@@ -314,12 +314,12 @@ export default function Home() {
       }
       return item;
     });
-    
+
     setDesktopItems(updatedItems);
-    
+
     // Save to localStorage
     localStorage.setItem('desktopItems', JSON.stringify(updatedItems));
-    
+
     setIsRenaming(false);
     setSelectedItem(null);
   };
@@ -329,7 +329,7 @@ export default function Home() {
     const handleClick = () => {
       setShowContextMenu(false);
       setShowFileContextMenu(false);
-      
+
       // If user clicks outside while renaming, save the rename
       if (isRenaming) {
         handleSaveRename();
@@ -347,11 +347,11 @@ export default function Home() {
   const handleItemContextMenu = (e: React.MouseEvent, item: any) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Only show context menu for user-created items
     const isDefaultFolder = defaultFolders.some(folder => folder.id === item.id);
     if (isDefaultFolder) return;
-    
+
     setSelectedItem(item);
     setShowFileContextMenu(true);
     setFileContextMenuPosition({ x: e.clientX, y: e.clientY });
@@ -535,7 +535,13 @@ export default function Home() {
                 <div className="h-12"></div>
               </div>
             ) : (
-              <FileIcon text={item.name} url={item.url} />
+              <FileIcon
+                text={item.name}
+                url={item.url}
+                icon={item.icon}
+                content={item.content || ''}
+                fileType={item.fileType}
+              />
             )
           ) : (
             isRenaming && selectedItem?.id === item.id ? (
