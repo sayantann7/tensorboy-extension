@@ -469,7 +469,24 @@ export default function Home() {
 
   const [useTimeSelection, setUseTimeSelection] = useState(false);
 
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
 
+  useEffect(() => {
+    const checkDeviceSize = () => {
+      if (typeof window !== 'undefined') {
+        setIsMobileOrTablet(window.innerWidth < 1024); // Consider devices under 1024px as mobile/tablet
+      }
+    };
+    
+    // Initial check
+    checkDeviceSize();
+    
+    // Add resize listener
+    window.addEventListener('resize', checkDeviceSize);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkDeviceSize);
+  }, []);
 
   const calculateItemPosition = () => {
     // Count existing user items
@@ -497,6 +514,34 @@ export default function Home() {
       y: yPosition
     };
   };
+
+
+  if (isMobileOrTablet) {
+  return (
+    <div className="relative min-h-screen w-full bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden">
+      {/* Background video with 10% opacity */}
+      <video
+        src="/bg-video.mp4"
+        autoPlay
+        loop
+        muted
+        className="absolute inset-0 w-full h-full object-cover opacity-8 z-0"
+      />
+      
+      {/* Content stays above the video */}
+      <div className="max-w-md relative z-10">
+        <h1 className="text-white text-3xl pixelated-font mb-6">desktop only</h1>
+        <p className="text-white/80 pixelated-font mb-6">
+          this website is designed for desktop experiences only.
+          Please visit on a PC to explore the full experience.
+        </p>
+        <p className="text-white/80 pixelated-font mt-8 text-sm">
+          made with love by tensorboy
+        </p>
+      </div>
+    </div>
+  );
+}
 
 
 
