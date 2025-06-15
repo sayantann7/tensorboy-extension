@@ -10,7 +10,7 @@ function SoundboardIcon({ onClick }: SoundboardIconProps) {
         <div className="flex flex-col items-center cursor-pointer" onClick={onClick}>
             <div className="relative w-16 h-16">
                 <Image
-                    src="/soundboard-2.png" 
+                    src="/soundboard.png" 
                     alt="Soundboard"
                     width={64}
                     height={64}

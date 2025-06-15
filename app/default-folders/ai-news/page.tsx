@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import FileIcon from '@/components/FileIcon';
@@ -7,7 +7,14 @@ import FileIcon from '@/components/FileIcon';
 export default function Home() {
     const params = useParams();
     const folderId = params.folderId as string;
-    const [wallpaper, setWallpaper] = useState(localStorage.getItem('wallpaperNumber') || 1);
+    const [wallpaper, setWallpaper] = useState(1);
+
+    useEffect(() => {
+        const storedWallpaper = localStorage.getItem('wallpaperNumber');
+        if (storedWallpaper) {
+            setWallpaper(Number(storedWallpaper));
+        }
+    }, []);
 
     return (
         <div className="relative w-screen min-h-screen overflow-hidden">

@@ -7,7 +7,14 @@ import FileIcon from '@/components/FileIcon';
 export default function Home() {
     const params = useParams();
     const folderId = params.folderId as string;
-    const [wallpaper, setWallpaper] = useState(localStorage.getItem('wallpaperNumber') || 1);
+    const [wallpaper, setWallpaper] = useState(1);
+
+    useEffect(() => {
+        const storedWallpaper = localStorage.getItem('wallpaperNumber');
+        if (storedWallpaper) {
+            setWallpaper(Number(storedWallpaper));
+        }
+    }, []);
 
     return (
         <div className="relative w-screen min-h-screen overflow-hidden">
@@ -65,7 +72,7 @@ export default function Home() {
             </div>
 
             <div className="absolute top-1/12 right-60 flex flex-col gap-10 z-30">
-            <FileIcon
+                <FileIcon
                     text="IPTLC Hackathon"
                     url="https://docs.google.com/forms/d/e/1FAIpQLSchabhFYNzw7Kw2ku4NjCqjYfYVUmEtm9IrAUOYfCiXTrEcjA/viewform"
                     icon="google"
@@ -79,7 +86,7 @@ export default function Home() {
                     content=""
                     fileType="link"
                 />
-                
+
             </div>
 
         </div>
