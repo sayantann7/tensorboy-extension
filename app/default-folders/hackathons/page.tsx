@@ -23,45 +23,63 @@ export default function Home() {
             </div>
 
             <div className="absolute top-30 left-8 z-30">
-                <h1 className="text-white text-5xl pixelated-font">AI NEWS</h1>
+                <h1 className="text-white text-5xl pixelated-font">HACKATHONS</h1>
             </div>
 
             <div className="absolute top-1/12 right-8 flex flex-col gap-10 z-30">
                 <FileIcon
-                    text="OpenAI News"
-                    url="https://openai.com/news"
+                    text="Hack With India"
+                    url="https://unstop.com/hackathons/comsoc-hackx-2025-chandigarh-university-cu-ajitgarh-punjab-1412240?lb=uUzX7sqN&utm_medium=Share&utm_source=shortUrl"
                     icon="openai"
                     content=""
                     fileType="link"
                 />
                 <FileIcon
-                    text="Google News"
-                    url="https://ai.google/research"
+                    text="HackArena"
+                    url="https://hackarenaa.devfolio.co/"
                     icon="google"
                     content=""
                     fileType="link"
                 />
                 <FileIcon
-                    text="Meta News"
-                    url="https://ai.meta.com"
+                    text="Adobe Express Hackathon"
+                    url="https://adobeexpress.devpost.com/?ref_feature=challenge&ref_medium=discover"
                     icon="meta"
                     content=""
                     fileType="link"
                 />
                 <FileIcon
-                    text="DeepMind News"
-                    url="https://deepmind.com"
+                    text="Edge AI Developer Hackathon"
+                    url="https://www.qualcomm.com/developer/events/edge-ai-developer-hackathon/bengaluru-india?utm"
                     icon="deepmind"
                     content=""
                     fileType="link"
                 />
                 <FileIcon
-                    text="Microsoft News"
-                    url="https://azure.microsoft.com"
+                    text="Adobe India Hackathon"
+                    url="https://unstop.com/hackathons/adobe-india-hackathon-adobe-1483364"
                     icon="microsoft"
                     content=""
                     fileType="link"
                 />
+            </div>
+
+            <div className="absolute top-1/12 right-60 flex flex-col gap-10 z-30">
+            <FileIcon
+                    text="IPTLC Hackathon"
+                    url="https://docs.google.com/forms/d/e/1FAIpQLSchabhFYNzw7Kw2ku4NjCqjYfYVUmEtm9IrAUOYfCiXTrEcjA/viewform"
+                    icon="google"
+                    content=""
+                    fileType="link"
+                />
+                <FileIcon
+                    text="IBM Hackathon"
+                    url="https://www.ibm.com/community/techxchange-hackathons/"
+                    icon="openai"
+                    content=""
+                    fileType="link"
+                />
+                
             </div>
 
         </div>

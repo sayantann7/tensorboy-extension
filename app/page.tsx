@@ -731,7 +731,7 @@ export default function Home() {
 
       {/* ——— Default Folders ——— */}
       <div className="absolute top-1/20 right-8 flex flex-col gap-10 z-30">
-        <FolderIcon text="ai news" url="http://localhost:3000/default-folders/ai-news" />
+        <FolderIcon text="ai news" url="https://extension.tensorboy.com/default-folders/ai-news" />
         <FolderIcon text="internships" url="https://extension.tensorboy.com/default-folders/internships" />
         <FolderIcon text="hackathons" url="https://extension.tensorboy.com/default-folders/hackathons" />
         <SoundboardIcon onClick={() => setShowSoundboard(true)} />
