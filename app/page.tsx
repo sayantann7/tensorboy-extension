@@ -153,6 +153,7 @@ const PriorityList = () => {
 export default function Home() {
   const [currentTime, setCurrentTime] = useState('00:00 AM');
   const [greeting, setGreeting] = useState('good morning hacker');
+  const [username, setUsername] = useState('');
   const [wallpaperNumber, setWallpaperNumber] = useState(1);
 
   const [showDisclaimerModal, setShowDisclaimerModal] = useState(false);
@@ -170,6 +171,44 @@ export default function Home() {
 
     setHasCheckedStorage(true);
   }, []);
+  // Load stored username
+  useEffect(() => {
+    const stored = localStorage.getItem('username');
+    if (stored) setUsername(stored);
+  }, []);
+
+  // Separate effect for time updates and calculations
+  useEffect(() => {
+    // Function to update time
+    function updateTime() {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const formattedHours = (hours % 12) || 12;
+      const formattedMinutes = minutes.toString().padStart(2, '0');
+      const timeString = `${formattedHours}:${formattedMinutes} ${ampm}`;
+      setCurrentTime(timeString);
+
+      if (hours >= 5 && hours < 12) {
+        setGreeting(`good morning ${username || 'hacker'}`);
+      } else if (hours >= 12 && hours < 18) {
+        setGreeting(`good afternoon ${username || 'hacker'}`);
+      } else {
+        setGreeting(`good evening ${username || 'hacker'}`);
+      }
+    }
+
+    // Initial time update
+    updateTime();
+
+    // Update time every second
+    const timeInterval = setInterval(updateTime, 1000);
+
+    return () => {
+      clearInterval(timeInterval);
+    };
+  }, [username]); // Re-run when username changes to update greeting
 
   // Add new state variables for mission customization
   const [showMissionModal, setShowMissionModal] = useState(false);
@@ -325,11 +364,11 @@ export default function Home() {
       setCurrentTime(timeString);
 
       if (hours >= 5 && hours < 12) {
-        setGreeting('good morning hacker');
+        setGreeting(`good morning ${username || 'hacker'}`);
       } else if (hours >= 12 && hours < 18) {
-        setGreeting('good afternoon hacker');
+        setGreeting(`good afternoon ${username || 'hacker'}`);
       } else {
-        setGreeting('good evening hacker');
+        setGreeting(`good evening ${username || 'hacker'}`);
       }
     }
 
@@ -342,7 +381,7 @@ export default function Home() {
     return () => {
       clearInterval(timeInterval);
     };
-  }, []); // Empty dependency array - only run once on mount
+  }, [username]); // Re-run when username changes to update greeting
 
   // Effect for mission timer calculation - update every second
   useEffect(() => {
@@ -687,7 +726,7 @@ export default function Home() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-
+      {/* Greeting display now shows custom username */}
       {/* Soundboard Modal */}
       <Soundboard isOpen={showSoundboard} onClose={() => setShowSoundboard(false)} />
 

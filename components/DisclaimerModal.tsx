@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 
 export default function DisclaimerModal({ onClose }: { onClose: () => void }) {
     const [isVisible, setIsVisible] = useState(false);
+    const [username, setUsername] = useState('');
+    const [error, setError] = useState('');
 
     useEffect(() => {
         // Check if user has seen disclaimer
@@ -16,8 +18,18 @@ export default function DisclaimerModal({ onClose }: { onClose: () => void }) {
         }
     }, []);
 
-    // Handle the close action
-    const handleClose = () => {
+    // Handle the submit action after entering username
+    const handleSubmit = () => {
+        const trimmed = username.trim();
+        if (!trimmed) {
+            setError('Please enter a username.');
+            return;
+        }
+        if (trimmed.toLowerCase() === 'batman') {
+            setError("Username 'batman' is already taken.");
+            return;
+        }
+        localStorage.setItem('username', trimmed);
         setIsVisible(false);
         onClose();
     };
@@ -25,14 +37,14 @@ export default function DisclaimerModal({ onClose }: { onClose: () => void }) {
     if (!isVisible) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[200]" onClick={handleClose}>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[200]" onClick={handleSubmit}>
             <div className="bg-[#222] border border-white/30 p-6 w-[500px] rounded-sm" onClick={(e) => e.stopPropagation()}>
                 {/* Window title bar with Mac-style controls */}
                 <div className="flex items-center mb-6">
                     {/* Control buttons */}
                     <div className="flex space-x-2">
                         <button
-                            onClick={handleClose}
+                            onClick={handleSubmit}
                             className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors"
                         />
                         <div className="w-3 h-3 rounded-full bg-yellow-500 opacity-50" />
@@ -49,19 +61,28 @@ export default function DisclaimerModal({ onClose }: { onClose: () => void }) {
                   <p className="text-white/80 pixelated-font mb-4">
                     This is a beta version of the extension. Some features may not work as expected.
                   </p>
-                  <p className="text-white/80 pixelated-font mb-4">
-                    We'd love your help naming this extension! Please submit your suggestion using the link below. Thanks!
-                  </p>
                   <p className="text-white/80 pixelated-font mb-6">
                     - tensorboy
                   </p>
-                  <a
-                    href="https://form.typeform.com/to/qSpmCYJR"
-                    target="_blank"
-                    className="block w-full bg-[#b8460e] hover:bg-[#a53d0c] text-white pixelated-font text-center px-4 py-3 border border-white/30 transition-colors"
+                  {/* Username input section */}
+                  <div className="mb-4">
+                    <label className="block text-white/80 pixelated-font mb-2">Enter a username (not your real name):</label>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => { setUsername(e.target.value); setError(''); }}
+                      className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
+                      placeholder="Your username"
+                    />
+                    {error && <p className="text-red-500 pixelated-font mt-1">{error}</p>}
+                  </div>
+                  {/* Submit username button */}
+                  <button
+                    onClick={handleSubmit}
+                    className="block w-full bg-[#b8460e] hover:bg-[#a53d0c] text-white pixelated-font text-center px-4 py-3 border border-white/30 mt-4 transition-colors"
                   >
-                    Suggest a Name for This Extension
-                  </a>
+                    Continue
+                  </button>
                 </div>
             </div>
         </div>
