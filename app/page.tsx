@@ -679,12 +679,20 @@ export default function Home() {
 
       const data = await res.json();
 
+      const imageUrl = data.fileUrl || '';
+
       if (!res.ok) {
         setUploadError(data.error || 'Upload failed');
         setIsUploading(false);
       } else {
         setUploadedUrl(data.fileUrl || '');
         console.log("Wallpaper uploaded successfully:", data.fileUrl);
+        const uploadResult = await uploadWallpaper(imageUrl, localStorage.getItem('username') ?? '');
+        if (uploadResult.error) {
+          setUploadError(uploadResult.error);
+          setIsUploading(false);
+          return;
+        }
         setIsUploading(false);
         setUploadSubmitted(true);
       }
