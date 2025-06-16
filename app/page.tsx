@@ -7,6 +7,7 @@ import SoundboardIcon from "@/components/SoundboardIcon";
 import Soundboard from "@/components/Soundboard";
 import DisclaimerModal from "@/components/DisclaimerModal";
 import ReactDOM from 'react-dom';
+import { uploadWallpaper } from "@/lib/utils";
 
 // Update the existing PriorityList component
 const PriorityList = () => {
@@ -648,7 +649,20 @@ export default function Home() {
 
   const [useTimeSelection, setUseTimeSelection] = useState(false);
 
+  // New state for upload wallpaper modal
+  const [showUploadWallpaperModal, setShowUploadWallpaperModal] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadSubmitted, setUploadSubmitted] = useState(false);
+
+  // State for mobile/tablet detection
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
+
+  // Handler for upload submit
+  const handleUploadSubmit = async () => {
+    const response = await uploadWallpaper(uploadedFile!);
+    console.log("Wallpaper uploaded successfully:", response);
+    setUploadSubmitted(true);
+  };
 
   useEffect(() => {
     const checkDeviceSize = () => {
@@ -937,6 +951,31 @@ export default function Home() {
               </svg>
               Next Wallpaper
             </button>
+            <div className="w-full h-px bg-white/20 my-1"></div>
+            <button onClick={() => { setShowUploadWallpaperModal(true); setShowContextMenu(false); }} className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              Add your own</button>
+          </div>
+        </div>
+      )}
+
+      {/* Upload Wallpaper Modal */}
+      {showUploadWallpaperModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[300]" onClick={() => setShowUploadWallpaperModal(false)}>
+          <div className="bg-[#222] border border-white/30 p-6 w-[500px] rounded-sm" onClick={(e) => e.stopPropagation()}>
+            {!uploadSubmitted ? (
+              <>
+                <h2 className="text-white text-2xl pixelated-font mb-4">Upload Wallpaper</h2>
+                <input type="file" accept="image/*,video/*" onChange={(e) => setUploadedFile(e.target.files?.[0] || null)} className="mb-4 w-full text-white" />
+                <button onClick={handleUploadSubmit} className="px-4 py-2 bg-[#b8460e] hover:bg-[#a53d0c] border border-white/30 text-white pixelated-font transition-colors">Submit</button>
+              </>
+            ) : (
+              <p className="text-white pixelated-font">We will approve this wallpaper in T-24H and add to our collection</p>
+            )}
           </div>
         </div>
       )}
