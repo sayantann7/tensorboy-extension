@@ -3,6 +3,7 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import * as mime from 'mime-types';
 import { v4 as uuidv4 } from 'uuid';
+import { ObjectCannedACL } from "@aws-sdk/client-s3";
 
 // Configure the S3 client
 const s3Client = new S3Client({
@@ -37,12 +38,13 @@ export async function POST(request: Request) {
     
     // Create upload params
     const bucketName = process.env.AWS_S3_BUCKET_NAME || 'tensorboy';
+
     const params = {
       Bucket: bucketName,
       Key: uniqueFilename,
       Body: buffer,
       ContentType: contentType,
-      ACL: 'public-read', // Make the file publicly accessible
+      ACL: "public-read" as ObjectCannedACL, // Make the file publicly accessible
     };
 
     // Upload to S3

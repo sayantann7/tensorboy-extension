@@ -6,7 +6,7 @@ import FileIcon from '@/components/FileIcon';
 
 export default function Home() {
     const params = useParams();
-    const folderId = params.folderId as string;
+    const folderId = (params?.folderId ?? '') as string;
     const [wallpaper, setWallpaper] = useState(1);
 
     const internshipFiles1 = [

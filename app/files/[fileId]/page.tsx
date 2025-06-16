@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown';
 
 export default function FilePage() {
   const params = useParams();
-  const fileId = params.fileId as string;
+  const fileId = params?.fileId as string;
   const [wallpaper, setWallpaper] = useState(localStorage.getItem('wallpaperNumber') || 1);
   
   const [fileData, setFileData] = useState<{
