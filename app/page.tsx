@@ -915,7 +915,7 @@ export default function Home() {
               Create New Folder
             </button> */}
             <div className="w-full h-px bg-white/20 my-1"></div>
-            <button
+            {/* <button
               onClick={handlePreviousWallpaper}
               className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
             >
@@ -925,7 +925,7 @@ export default function Home() {
                 <polyline points="5 15 10 10 21 21"></polyline>
               </svg>
               Previous Wallpaper
-            </button>
+            </button> */}
             <button
               onClick={handleNextWallpaper}
               className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
