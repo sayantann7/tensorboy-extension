@@ -12,7 +12,8 @@ const s3Client = new S3Client({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
   },
-  endpoint: 'https://tensorboy.s3.ap-south-1.amazonaws.com',
+  // Do NOT include the bucket name in the endpoint
+  endpoint: 'https://s3.ap-south-1.amazonaws.com',
 });
 
 export async function POST(request: Request) {
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
     const result = await upload.done();
 
     // Construct the file URL
-    const fileUrl = `https://tensorboy.s3.ap-south-1.amazonaws.com/${uniqueFilename}`;
+    const fileUrl = `https://${bucketName}.s3.ap-south-1.amazonaws.com/${uniqueFilename}`;
 
     return NextResponse.json({
       message: "Upload successful!",
