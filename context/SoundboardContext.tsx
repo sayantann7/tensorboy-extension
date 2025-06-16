@@ -7,6 +7,12 @@ interface SoundtrackProps {
     src: string;
 }
 
+interface Preset {
+    name: string;
+    volumes: { [key: string]: number };
+    playingTracks: { [key: string]: boolean };
+}
+
 interface SoundboardContextType {
     playingTracks: { [key: string]: boolean };
     volumes: { [key: string]: number };
@@ -15,6 +21,10 @@ interface SoundboardContextType {
     handleVolumeChange: (src: string) => (volume: number) => void;
     playAllTracks: () => void;
     stopAllTracks: () => void;
+    presets: Preset[];
+    createPreset: (name: string) => void;
+    playPreset: (index: number) => void;
+    deletePreset: (index: number) => void;
 }
 
 const SoundboardContext = createContext<SoundboardContextType | undefined>(undefined);
@@ -149,6 +159,50 @@ export const SoundboardProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setPlayingTracks(allStopped);
     }, []);
 
+    // Preset state and actions
+    const [presets, setPresets] = useState<Preset[]>([]);
+    // Load presets from localStorage on mount
+    useEffect(() => {
+      const stored = typeof window !== 'undefined' ? localStorage.getItem('soundboard-presets') : null;
+      if (stored) {
+        try {
+          setPresets(JSON.parse(stored));
+        } catch {}
+      }
+    }, []);
+   // Save presets to localStorage when changed
+   useEffect(() => {
+     if (typeof window !== 'undefined') {
+       localStorage.setItem('soundboard-presets', JSON.stringify(presets));
+     }
+   }, [presets]);
+    const createPreset = useCallback((name: string) => {
+        const newPreset: Preset = { name, volumes: { ...volumes }, playingTracks: { ...playingTracks } };
+        setPresets(prev => [...prev, newPreset]);
+    }, [volumes, playingTracks]);
+
+    const playPreset = useCallback((index: number) => {
+        const preset = presets[index];
+        if (!preset) return;
+        Object.entries(preset.volumes).forEach(([src, volume]) => {
+            const audio = audioRefs.current[src];
+            if (audio) audio.volume = volume;
+        });
+        Object.entries(preset.playingTracks).forEach(([src, shouldPlay]) => {
+            const audio = audioRefs.current[src];
+            if (audio) {
+                if (shouldPlay) audio.play();
+                else audio.pause();
+            }
+        });
+        setVolumes(preset.volumes);
+        setPlayingTracks(preset.playingTracks);
+    }, [presets]);
+
+    const deletePreset = useCallback((index: number) => {
+        setPresets(prev => prev.filter((_, i) => i !== index));
+    }, []);
+
     return (
         <SoundboardContext.Provider
             value={{
@@ -158,7 +212,11 @@ export const SoundboardProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                 togglePlay,
                 handleVolumeChange,
                 playAllTracks,
-                stopAllTracks
+                stopAllTracks,
+                presets,
+                createPreset,
+                playPreset,
+                deletePreset
             }}
         >
             {children}
