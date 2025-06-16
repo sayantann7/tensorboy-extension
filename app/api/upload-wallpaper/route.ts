@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     const result = await upload.done();
 
     // Construct the file URL
-    const fileUrl = `https://${bucketName}.s3.ap-south-1.amazonaws.com/${uniqueFilename}`;
+    const fileUrl = `https://tensorboy.s3.ap-south-1.amazonaws.com/${uniqueFilename}`;
 
     return NextResponse.json({
       message: "Upload successful!",

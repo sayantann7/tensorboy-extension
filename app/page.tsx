@@ -654,14 +654,45 @@ export default function Home() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadSubmitted, setUploadSubmitted] = useState(false);
 
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadedUrl, setUploadedUrl] = useState('');
+
   // State for mobile/tablet detection
   const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
 
   // Handler for upload submit
   const handleUploadSubmit = async () => {
-    const response = await uploadWallpaper(uploadedFile!);
-    console.log("Wallpaper uploaded successfully:", response);
-    setUploadSubmitted(true);
+    if (!uploadedFile) return;
+
+    setIsUploading(true);
+    setUploadError('');
+
+    const formData = new FormData();
+    formData.append('file', uploadedFile);
+
+    try {
+      const res = await fetch('/api/upload-wallpaper', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setUploadError(data.error || 'Upload failed');
+        setIsUploading(false);
+      } else {
+        setUploadedUrl(data.fileUrl || '');
+        console.log("Wallpaper uploaded successfully:", data.fileUrl);
+        setIsUploading(false);
+        setUploadSubmitted(true);
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      setUploadError('Unexpected error occurred during upload');
+      setIsUploading(false);
+    }
   };
 
   useEffect(() => {
@@ -970,11 +1001,74 @@ export default function Home() {
             {!uploadSubmitted ? (
               <>
                 <h2 className="text-white text-2xl pixelated-font mb-4">Upload Wallpaper</h2>
-                <input type="file" accept="image/*,video/*" onChange={(e) => setUploadedFile(e.target.files?.[0] || null)} className="mb-4 w-full text-white" />
-                <button onClick={handleUploadSubmit} className="px-4 py-2 bg-[#b8460e] hover:bg-[#a53d0c] border border-white/30 text-white pixelated-font transition-colors">Submit</button>
+
+                {/* Prettier file input replacement */}
+                <div className="mb-6">
+                  <div className="relative border border-white/30 rounded-sm bg-[#333] p-4 cursor-pointer hover:bg-[#444] transition-colors">
+                    <input
+                      type="file"
+                      accept="image/*,video/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        setUploadedFile(file);
+                      }}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      disabled={isUploading}
+                    />
+                    <div className="flex items-center justify-center gap-3 text-white pixelated-font">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                      <span>{uploadedFile ? uploadedFile.name : 'Choose wallpaper file...'}</span>
+                    </div>
+                  </div>
+
+                  {uploadedFile && (
+                    <div className="mt-4 p-3 border border-white/30 rounded-sm bg-[#333]">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-green-400">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                          <span className="text-white pixelated-font truncate max-w-[300px]">{uploadedFile.name}</span>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setUploadedFile(null);
+                          }}
+                          className="text-white hover:text-red-400 transition-colors"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {uploadError && (
+                    <div className="mt-2 text-red-500 pixelated-font">{uploadError}</div>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleUploadSubmit}
+                  disabled={isUploading || !uploadedFile}
+                  className={`px-4 py-2 ${isUploading ? 'bg-gray-500' : 'bg-[#b8460e] hover:bg-[#a53d0c]'} border border-white/30 text-white pixelated-font transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {isUploading ? 'Submitting...' : 'Submit'}
+                </button>
               </>
             ) : (
-              <p className="text-white pixelated-font">We will approve this wallpaper in T-24H and add to our collection</p>
+              <>
+                <h2 className="text-white text-2xl pixelated-font mb-4">Thanks for your submission!</h2>
+                <p className="text-white mb-4">Our team will review your wallpaper and add it to the collection if approved.</p>
+                <button onClick={() => { setShowUploadWallpaperModal(false); setUploadSubmitted(false); }} className="px-4 py-2 bg-[#b8460e] hover:bg-[#a53d0c] border border-white/30 text-white pixelated-font transition-colors">Close</button>
+              </>
             )}
           </div>
         </div>
