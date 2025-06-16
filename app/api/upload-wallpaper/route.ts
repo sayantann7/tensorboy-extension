@@ -7,13 +7,14 @@ import { ObjectCannedACL } from "@aws-sdk/client-s3";
 
 // Configure the S3 client
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION || 'ap-south-1',
+  region: 'ap-south-1',
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
   },
-  // Do NOT include the bucket name in the endpoint
   endpoint: 'https://s3.ap-south-1.amazonaws.com',
+  forcePathStyle: false,
+  signingRegion: 'ap-south-1' // Add this line to ensure correct signature
 });
 
 export async function POST(request: Request) {
