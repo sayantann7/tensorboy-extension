@@ -15,12 +15,12 @@ const PriorityList = () => {
     { id: 2, text: '', completed: false },
     { id: 3, text: '', completed: false }
   ]);
-  
+
   const [showPriorityModal, setShowPriorityModal] = useState(false);
   // Ensure portal only runs on client
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
-  
+
   useEffect(() => {
     // Load saved priorities from localStorage on component mount
     if (typeof window !== 'undefined') {
@@ -34,21 +34,21 @@ const PriorityList = () => {
       }
     }
   }, []);
-  
+
   const handleSavePriorities = () => {
     localStorage.setItem('priorities', JSON.stringify(priorities));
     setShowPriorityModal(false);
   };
-  
+
   const handleTextChange = (id: number, text: string) => {
-    const newPriorities = priorities.map(priority => 
+    const newPriorities = priorities.map(priority =>
       priority.id === id ? { ...priority, text } : priority
     );
     setPriorities(newPriorities);
   };
-  
+
   const handleCompletedChange = (id: number, completed: boolean) => {
-    const newPriorities = priorities.map(priority => 
+    const newPriorities = priorities.map(priority =>
       priority.id === id ? { ...priority, completed } : priority
     );
     setPriorities(newPriorities);
@@ -58,57 +58,57 @@ const PriorityList = () => {
   const portalRoot = typeof document !== 'undefined' ? document.body : null;
   const priorityModal = mounted && showPriorityModal && portalRoot
     ? ReactDOM.createPortal(
+      <div
+        className="fixed inset-0 bg-black/70 flex items-center justify-center z-[999]"
+        onClick={() => setShowPriorityModal(false)}
+        style={{ isolation: 'isolate' }}
+      >
         <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center z-[999]"
-          onClick={() => setShowPriorityModal(false)}
-          style={{ isolation: 'isolate' }}
+          className="bg-[#222] border border-white/30 p-6 w-[400px] rounded-sm"
+          onClick={(e) => e.stopPropagation()}
         >
-          <div
-            className="bg-[#222] border border-white/30 p-6 w-[400px] rounded-sm"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-white text-2xl pixelated-font mb-6">Set Priorities</h2>
+          <h2 className="text-white text-2xl pixelated-font mb-6">Set Priorities</h2>
 
-            {priorities.map(priority => (
-              <div key={priority.id} className="mb-6">
-                <label className="block text-white pixelated-font mb-2">Priority {priority.id}</label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={priority.completed}
-                    onChange={(e) => handleCompletedChange(priority.id, e.target.checked)}
-                    className="mr-2 bg-[#333] border border-white/30"
-                  />
-                  <input
-                    type="text"
-                    className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
-                    value={priority.text}
-                    onChange={(e) => handleTextChange(priority.id, e.target.value)}
-                    placeholder={`Enter priority ${priority.id}`}
-                  />
-                </div>
+          {priorities.map(priority => (
+            <div key={priority.id} className="mb-6">
+              <label className="block text-white pixelated-font mb-2">Priority {priority.id}</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={priority.completed}
+                  onChange={(e) => handleCompletedChange(priority.id, e.target.checked)}
+                  className="mr-2 bg-[#333] border border-white/30"
+                />
+                <input
+                  type="text"
+                  className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
+                  value={priority.text}
+                  onChange={(e) => handleTextChange(priority.id, e.target.value)}
+                  placeholder={`Enter priority ${priority.id}`}
+                />
               </div>
-            ))}
-
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={() => setShowPriorityModal(false)}
-                className="px-4 py-2 bg-black/50 hover:bg-black/70 border border-white/30 text-white pixelated-font transition-colors"
-              >cancel</button>
-              <button
-                onClick={handleSavePriorities}
-                className="px-4 py-2 bg-[#b8460e] hover:bg-[#a53d0c] border border-white/30 text-white pixelated-font transition-colors"
-              >save</button>
             </div>
+          ))}
+
+          <div className="flex justify-end gap-4">
+            <button
+              onClick={() => setShowPriorityModal(false)}
+              className="px-4 py-2 bg-black/50 hover:bg-black/70 border border-white/30 text-white pixelated-font transition-colors"
+            >cancel</button>
+            <button
+              onClick={handleSavePriorities}
+              className="px-4 py-2 bg-[#b8460e] hover:bg-[#a53d0c] border border-white/30 text-white pixelated-font transition-colors"
+            >save</button>
           </div>
-        </div>,
-        portalRoot
-      )
+        </div>
+      </div>,
+      portalRoot
+    )
     : null;
-  
+
   // Render priority list UI
   const listUI = (
-    <div 
+    <div
       className="mt-6 p-4 cursor-pointer text-xl"
       onClick={() => setShowPriorityModal(true)}
     >
@@ -617,13 +617,13 @@ export default function Home() {
         setIsMobileOrTablet(window.innerWidth < 1024); // Consider devices under 1024px as mobile/tablet
       }
     };
-    
+
     // Initial check
     checkDeviceSize();
-    
+
     // Add resize listener
     window.addEventListener('resize', checkDeviceSize);
-    
+
     // Cleanup
     return () => window.removeEventListener('resize', checkDeviceSize);
   }, []);
@@ -657,31 +657,31 @@ export default function Home() {
 
 
   if (isMobileOrTablet) {
-  return (
-    <div className="relative min-h-screen w-full bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden">
-      {/* Background video with 10% opacity */}
-      <video
-        src="/bg-video.mp4"
-        autoPlay
-        loop
-        muted
-        className="absolute inset-0 w-full h-full object-cover opacity-8 z-0"
-      />
-      
-      {/* Content stays above the video */}
-      <div className="max-w-md relative z-10">
-        <h1 className="text-white text-3xl pixelated-font mb-6">desktop only</h1>
-        <p className="text-white/80 pixelated-font mb-6">
-          this website is designed for desktop experiences only.
-          Please visit on a PC to explore the full experience.
-        </p>
-        <p className="text-white/80 pixelated-font mt-8 text-sm">
-          made with love by tensorboy
-        </p>
+    return (
+      <div className="relative min-h-screen w-full bg-black flex flex-col items-center justify-center p-6 text-center overflow-hidden">
+        {/* Background video with 10% opacity */}
+        <video
+          src="/bg-video.mp4"
+          autoPlay
+          loop
+          muted
+          className="absolute inset-0 w-full h-full object-cover opacity-8 z-0"
+        />
+
+        {/* Content stays above the video */}
+        <div className="max-w-md relative z-10">
+          <h1 className="text-white text-3xl pixelated-font mb-6">desktop only</h1>
+          <p className="text-white/80 pixelated-font mb-6">
+            this website is designed for desktop experiences only.
+            Please visit on a PC to explore the full experience.
+          </p>
+          <p className="text-white/80 pixelated-font mt-8 text-sm">
+            made with love by tensorboy
+          </p>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
 
 
@@ -696,8 +696,8 @@ export default function Home() {
       <DisclaimerModal onClose={closeDisclaimerModal} />
 
       <div className="absolute bottom-67 left-4 z-30 w-80">
-  <PriorityList />
-</div>
+        <PriorityList />
+      </div>
 
       {/* ——— Background image/video layer with context menu handler ——— */}
       <div
@@ -1006,12 +1006,11 @@ export default function Home() {
                 className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
                 value={missionEndDate.toISOString().split('T')[0]}
                 onChange={(e) => {
-                  // Keep the time portion of the existing date when changing just the date
+                  // Always set time to 12am (00:00) when changing the date
                   const newDate = new Date(e.target.value);
                   if (!isNaN(newDate.getTime())) {
-                    const hours = missionEndDate.getHours();
-                    const minutes = missionEndDate.getMinutes();
-                    newDate.setHours(hours, minutes, 0, 0);
+                    // Set time to 00:00:00 (12am)
+                    newDate.setHours(0, 0, 0, 0);
                     setMissionEndDate(newDate);
                   }
                 }}
@@ -1036,7 +1035,7 @@ export default function Home() {
                 <input
                   type="time"
                   className="w-full bg-[#333] text-white p-2 border border-white/30 rounded-sm"
-                  value={`${"0".padStart(2, '0')}:${"0".padStart(2, '0')}`}
+                  value={`${missionEndDate.getHours().toString().padStart(2, '0')}:${missionEndDate.getMinutes().toString().padStart(2, '0')}`}
                   onChange={(e) => {
                     const [hours, minutes] = e.target.value.split(':').map(Number);
                     const newDate = new Date(missionEndDate);
