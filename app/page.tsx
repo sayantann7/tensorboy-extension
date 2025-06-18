@@ -996,9 +996,9 @@ export default function Home() {
 
       {/* ——— Intro Text ——— */}
       <div className="absolute top-1/20 left-8 flex flex-col gap-2 z-30">
-        <h1 className="text-white text-xl pixelated-font mb-8">made with love by tensorboy</h1>
-        <h1 className="text-white text-xl pixelated-font">checkout the latest drop <a href="https://protocol.tensorboy.com/last-email" target="_blank" className="text-white/50 underline">link</a></h1>
-        <h1 className="text-white text-xl pixelated-font">not subscribed yet? <a href="https://protocol.tensorboy.com" target="_blank" className="text-white/50 underline">sub here</a></h1>
+        <h1 className="text-white text-xl pixelated-font mb-8">tensor extension - beta</h1>
+        {/* <h1 className="text-white text-xl pixelated-font">checkout the latest drop <a href="https://protocol.tensorboy.com/last-email" target="_blank" className="text-white/50 underline">link</a></h1>
+        <h1 className="text-white text-xl pixelated-font">not subscribed yet? <a href="https://protocol.tensorboy.com" target="_blank" className="text-white/50 underline">sub here</a></h1> */}
       </div>
 
       {/* ——— Timer ——— */}
