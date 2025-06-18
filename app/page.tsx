@@ -119,6 +119,7 @@ const PriorityList = () => {
       {priorities.map(priority => (
         <div key={priority.id} className="flex items-center mb-3">
           <div className="flex items-center gap-2">
+          <span className={`text-white pixelated-font w-6 ${priority.completed ? 'line-through' : ''}`}>P{priority.id}</span>
             <input
               type="checkbox"
               checked={priority.completed}
@@ -126,10 +127,9 @@ const PriorityList = () => {
                 e.stopPropagation();
                 handleCompletedChange(priority.id, e.target.checked);
               }}
-              className="mr-2 bg-[#333] border border-white/30"
+              className="mr-0 bg-[#333] border border-white/30"
               onClick={(e) => e.stopPropagation()}
             />
-            <span className={`text-white pixelated-font w-6 ${priority.completed ? 'line-through' : ''}`}>P{priority.id}</span>
             <span className={`pixelated-font ${priority.completed ? 'line-through text-white/50' : 'text-white/80'}`}>
               {priority.text || `Set priority ${priority.id}...`}
             </span>
