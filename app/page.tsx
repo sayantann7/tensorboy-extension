@@ -269,6 +269,8 @@ export default function Home() {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newItemRename, setNewItemRename] = useState('');
 
+  // Add denoiser state
+  const [denoiserEnabled, setDenoiserEnabled] = useState(false);
 
   // Load saved settings from localStorage only once on component mount
   useEffect(() => {
@@ -826,7 +828,7 @@ export default function Home() {
         className={`
           absolute inset-0
           bg-cover bg-center bg-no-repeat
-          filter grayscale-[50%] brightness-65 contrast-100
+          ${!denoiserEnabled ? 'filter grayscale-[50%] brightness-65 contrast-100' : ''}
           z-0
         `}
         style={{ 
@@ -837,22 +839,26 @@ export default function Home() {
       />
 
       {/* ——— Optional tint on top of the image ——— */}
-      <div className="absolute inset-0 bg-black/30 z-10" onContextMenu={handleContextMenu} />
+      {!denoiserEnabled && (
+        <div className="absolute inset-0 bg-black/30 z-10" onContextMenu={handleContextMenu} />
+      )}
 
       {/* ——— Video layer (untouched by the image filter) ——— */}
-      <video
-        src="/bg-video.mp4"
-        autoPlay
-        loop
-        muted
-        className="
-          absolute inset-0
-          w-full h-full object-cover
-          z-20
-          opacity-5
-        "
-        onContextMenu={handleContextMenu}
-      />
+      {!denoiserEnabled && (
+        <video
+          src="/bg-video.mp4"
+          autoPlay
+          loop
+          muted
+          className="
+            absolute inset-0
+            w-full h-full object-cover
+            z-20
+            opacity-5
+          "
+          onContextMenu={handleContextMenu}
+        />
+      )}
 
       {/* ——— Default Folders ——— */}
       <div className="absolute top-1/20 right-8 flex flex-col gap-10 z-30">
@@ -1068,14 +1074,16 @@ export default function Home() {
               </svg>
               Next Wallpaper
             </button>
-            {/* <div className="w-full h-px bg-white/20 my-1"></div>
-            <button onClick={() => { setShowUploadWallpaperModal(true); setShowContextMenu(false); }} className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2">
+            <button
+              onClick={() => setDenoiserEnabled((prev) => !prev)}
+              className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                <polyline points="21 15 16 10 5 21"></polyline>
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
               </svg>
-              Add your own</button> */}
+              {denoiserEnabled ? 'Disable Denoiser' : 'Enable Denoiser'}
+            </button>
           </div>
         </div>
       )}
