@@ -816,7 +816,7 @@ export default function Home() {
       {/* Beta Disclaimer Modal */}
       <DisclaimerModal onClose={closeDisclaimerModal} />
 
-      <div className="absolute bottom-67 left-4 z-30 w-80">
+      <div className="absolute bottom-67 left-4 z-30 w-100">
         <PriorityList />
       </div>
 
