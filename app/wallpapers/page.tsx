@@ -121,12 +121,12 @@ export default function WallpapersPage() {
 
             {/* Pinterest-like Masonry Grid Layout */}
             <div className="relative z-10 pt-50 px-8 pb-20">
-                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-[180px]">
                     {/* Upload Button */}
-                    <div 
+                    <div
                         onClick={() => setShowUploadModal(true)}
                         className="break-inside-avoid bg-black/50 border border-white/30 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-black/70 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-black/20"
-                        style={{ height: '300px' }}
+                        style={{ minHeight: '180px' }}
                     >
                         <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mb-4 group-hover:bg-white/20 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
@@ -136,28 +136,32 @@ export default function WallpapersPage() {
                         <span className="text-white pixelated-font text-lg">Upload New Wallpaper</span>
                         <span className="text-white/60 pixelated-font text-sm mt-2">Share your favorite wallpapers</span>
                     </div>
-
-                    {/* Wallpaper Grid Items */}
-                    {wallpapers.map((wallpaper) => (
-                        <div 
-                            key={wallpaper.id}
-                            className="break-inside-avoid group relative bg-black/50 border border-white/30 rounded-lg overflow-hidden cursor-pointer hover:bg-black/70 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-black/20"
-                            style={{ height: '300px' }}
-                            onClick={() => handleWallpaperSelect(wallpaper)}
-                        >
-                            <img 
-                                src={wallpaper.imageUrl} 
-                                alt={`Wallpaper ${wallpaper.id}`}
-                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                                <div className="text-white">
-                                    {/* <span className="pixelated-font text-lg">Wallpaper {wallpaper.id}</span> */}
-                                    <p className="text-white/80 text-sm mt-1 pixelated-font">click to set as current wallpaper</p>
+                    {wallpapers.map((wallpaper, i) => {
+                        // Randomly or by index, make some items larger
+                        let extraClass = "";
+                        if (i % 7 === 0) extraClass = "col-span-2 row-span-2";
+                        else if (i % 5 === 0) extraClass = "col-span-2";
+                        else if (i % 2 === 0) extraClass = "row-span-2";
+                        return (
+                            <div
+                                key={wallpaper.id}
+                                className={`break-inside-avoid group relative bg-black/50 border border-white/30 rounded-lg overflow-hidden cursor-pointer hover:bg-black/70 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-black/20 ${extraClass}`}
+                                onClick={() => handleWallpaperSelect(wallpaper)}
+                            >
+                                <img
+                                    src={wallpaper.imageUrl}
+                                    alt="Wallpaper"
+                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                    style={{ display: 'block', height: '100%' }}
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                    <div className="text-white">
+                                        <p className="text-white/80 text-sm mt-1 pixelated-font">click to set as current wallpaper</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
