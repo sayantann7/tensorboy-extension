@@ -3,24 +3,44 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import FileIcon from '@/components/FileIcon';
+import { getWallpapers, Wallpaper } from '@/lib/wallpapers';
 
 export default function Home() {
     const params = useParams();
     const folderId = (params?.folderId ?? '') as string;
-    const [wallpaper, setWallpaper] = useState(1);
+    const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
+    const [isLoadingWallpapers, setIsLoadingWallpapers] = useState(true);
+    const [currentWallpaper, setCurrentWallpaper] = useState<Wallpaper | null>(null);
 
     useEffect(() => {
-        const storedWallpaper = localStorage.getItem('wallpaperNumber');
-        if (storedWallpaper) {
-            setWallpaper(Number(storedWallpaper));
-        }
+        const loadWallpapers = async () => {
+            setIsLoadingWallpapers(true);
+            try {
+                const wallpapersData = await getWallpapers();
+                setWallpapers(wallpapersData);
+                
+                // Set current wallpaper from localStorage
+                const savedWallpaperId = localStorage.getItem('wallpaperId');
+                let wallpaper = null;
+                if (savedWallpaperId) {
+                    wallpaper = wallpapersData.find(w => w.id === savedWallpaperId);
+                }
+                setCurrentWallpaper(wallpaper || wallpapersData[0] || null);
+            } catch (error) {
+                console.error('Error loading wallpapers:', error);
+            } finally {
+                setIsLoadingWallpapers(false);
+            }
+        };
+        loadWallpapers();
     }, []);
 
     return (
         <div className="relative w-screen min-h-screen overflow-hidden">
             {/* Background layers */}
             <div className="fixed inset-0 z-0">
-                <div className="absolute inset-0 bg-cover bg-center bg-no-repeat filter grayscale-[50%] brightness-65 contrast-100" style={{ backgroundImage: `url(/wallpapers/${wallpaper}.gif)` }} />
+                <div className="absolute inset-0 bg-cover bg-center bg-no-repeat filter grayscale-[50%] brightness-65 contrast-100" 
+                    style={{ backgroundImage: !isLoadingWallpapers && currentWallpaper ? `url(${currentWallpaper.imageUrl})` : 'none' }} />
                 <div className="absolute inset-0 bg-black/30" />
                 <video src="/bg-video.mp4" autoPlay loop muted className="absolute inset-0 w-full h-full object-cover opacity-3" />
             </div>

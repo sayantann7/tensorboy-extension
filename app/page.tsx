@@ -8,6 +8,8 @@ import Soundboard from "@/components/Soundboard";
 import DisclaimerModal from "@/components/DisclaimerModal";
 import ReactDOM from 'react-dom';
 import { uploadWallpaper } from "@/lib/utils";
+import WallpaperIcon from "@/components/WallpaperIcon";
+import { getWallpapers, Wallpaper } from "@/lib/wallpapers";
 
 // Update the existing PriorityList component
 const PriorityList = () => {
@@ -155,7 +157,9 @@ export default function Home() {
   const [currentTime, setCurrentTime] = useState('00:00 AM');
   const [greeting, setGreeting] = useState('good morning hacker');
   const [username, setUsername] = useState('');
-  const [wallpaperNumber, setWallpaperNumber] = useState(1);
+  const [wallpaperNumber, setWallpaperNumber] = useState(0);
+  const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
+  const [isLoadingWallpapers, setIsLoadingWallpapers] = useState(true);
 
   const [showDisclaimerModal, setShowDisclaimerModal] = useState(false);
   const [hasCheckedStorage, setHasCheckedStorage] = useState(false);
@@ -269,12 +273,31 @@ export default function Home() {
   // Load saved settings from localStorage only once on component mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Load wallpaper number from localStorage
-      const savedWallpaperNumber = localStorage.getItem('wallpaperNumber');
-      if (savedWallpaperNumber) {
-        setWallpaperNumber(parseInt(savedWallpaperNumber, 10));
-      }
+      // Load wallpapers from backend
+      const loadWallpapers = async () => {
+        try {
+          setIsLoadingWallpapers(true);
+          const wallpapersData = await getWallpapers();
+          setWallpapers(wallpapersData);
+          
+          // Set default wallpaper to first one if none selected
+          const savedWallpaperId = localStorage.getItem('wallpaperId');
+          if (savedWallpaperId) {
+            const index = wallpapersData.findIndex((w: Wallpaper) => w.id === savedWallpaperId);
+            if (index !== -1) {
+              setWallpaperNumber(index);
+            }
+          }
+        } catch (error) {
+          console.error('Error loading wallpapers:', error);
+        } finally {
+          setIsLoadingWallpapers(false);
+        }
+      };
+      
+      loadWallpapers();
 
+      // Load other settings
       const savedMissionText = localStorage.getItem('missionText');
       if (savedMissionText) {
         setMissionText(savedMissionText);
@@ -438,9 +461,20 @@ export default function Home() {
 
   // Function to cycle to the next wallpaper
   const handleNextWallpaper = () => {
-    const nextNumber = wallpaperNumber >= 12 ? 1 : wallpaperNumber + 1;
-    setWallpaperNumber(nextNumber);
-    localStorage.setItem('wallpaperNumber', nextNumber.toString());
+    if (wallpapers.length === 0) return;
+    
+    const nextIndex = (wallpaperNumber + 1) % wallpapers.length;
+    setWallpaperNumber(nextIndex);
+    localStorage.setItem('wallpaperId', wallpapers[nextIndex].id);
+    setShowContextMenu(false);
+  };
+
+  const handlePreviousWallpaper = () => {
+    if (wallpapers.length === 0) return;
+    
+    const prevIndex = (wallpaperNumber - 1 + wallpapers.length) % wallpapers.length;
+    setWallpaperNumber(prevIndex);
+    localStorage.setItem('wallpaperId', wallpapers[prevIndex].id);
     setShowContextMenu(false);
   };
 
@@ -640,13 +674,6 @@ export default function Home() {
     setShowDisclaimerModal(false);
   };
 
-  const handlePreviousWallpaper = () => {
-    const prevNumber = wallpaperNumber <= 1 ? 12 : wallpaperNumber - 1;
-    setWallpaperNumber(prevNumber);
-    localStorage.setItem('wallpaperNumber', prevNumber.toString());
-    setShowContextMenu(false);
-  };
-
   const [useTimeSelection, setUseTimeSelection] = useState(false);
 
   // New state for upload wallpaper modal
@@ -747,6 +774,8 @@ export default function Home() {
     };
   };
 
+  const [showWallpaperWindow, setShowWallpaperWindow] = useState(false);
+  const [wallpaperWindowState, setWallpaperWindowState] = useState<'normal' | 'maximized' | 'minimized'>('normal');
 
   if (isMobileOrTablet) {
     return (
@@ -800,7 +829,11 @@ export default function Home() {
           filter grayscale-[50%] brightness-65 contrast-100
           z-0
         `}
-        style={{ backgroundImage: `url(/wallpapers/${wallpaperNumber}.gif)` }}
+        style={{ 
+          backgroundImage: !isLoadingWallpapers && wallpapers.length > 0 
+            ? `url(${wallpapers[wallpaperNumber].imageUrl})` 
+            : 'none' 
+        }}
       />
 
       {/* ——— Optional tint on top of the image ——— */}
@@ -826,8 +859,53 @@ export default function Home() {
         <FolderIcon text="ai news" url="https://tensorboy-extension.vercel.app/default-folders/ai-news" />
         <FolderIcon text="internships" url="https://tensorboy-extension.vercel.app/default-folders/internships" />
         <FolderIcon text="hackathons" url="https://tensorboy-extension.vercel.app/default-folders/hackathons" />
+        <WallpaperIcon onClick={() => {
+          setShowWallpaperWindow(true);
+          setWallpaperWindowState('normal');
+        }} />
         <SoundboardIcon onClick={() => setShowSoundboard(true)} />
       </div>
+
+      {/* Wallpaper Window */}
+      {showWallpaperWindow && (
+        <div 
+          className={`
+            fixed z-[200] bg-white rounded-lg shadow-xl overflow-hidden
+            ${wallpaperWindowState === 'normal' ? 'w-[800px] h-[600px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2' : ''}
+            ${wallpaperWindowState === 'minimized' ? 'w-[800px] h-12 bottom-0 left-1/2 transform -translate-x-1/2' : ''}
+          `}
+        >
+          {/* Window Title Bar */}
+          <div className="bg-[#333] px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setShowWallpaperWindow(false)}
+                className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400"
+              />
+              <button 
+                onClick={() => setShowWallpaperWindow(false)}
+                className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-400"
+              />
+              <button 
+                onClick={() => window.location.href = '/wallpapers'}
+                className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-400"
+              />
+            </div>
+            <span className="text-white text-sm pixelated-font">Wallpapers</span>
+            <div className="w-12" /> {/* Spacer for symmetry */}
+          </div>
+
+          {/* Window Content */}
+          {wallpaperWindowState !== 'minimized' && (
+            <div className="w-full h-[calc(100%-40px)]">
+              <iframe 
+                src="/wallpapers" 
+                className="w-full h-full border-none"
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ——— Custom Desktop Items ——— */}
       {desktopItems.map(item => (
@@ -990,14 +1068,14 @@ export default function Home() {
               </svg>
               Next Wallpaper
             </button>
-            <div className="w-full h-px bg-white/20 my-1"></div>
+            {/* <div className="w-full h-px bg-white/20 my-1"></div>
             <button onClick={() => { setShowUploadWallpaperModal(true); setShowContextMenu(false); }} className="w-full px-4 py-2 text-left text-white text-sm pixelated-font hover:bg-black/50 transition-colors flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                 <circle cx="8.5" cy="8.5" r="1.5"></circle>
                 <polyline points="21 15 16 10 5 21"></polyline>
               </svg>
-              Add your own</button>
+              Add your own</button> */}
           </div>
         </div>
       )}
