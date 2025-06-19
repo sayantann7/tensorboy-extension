@@ -115,49 +115,55 @@ export default function FilePage() {
       </div>
       
       {/* Mac-like window */}
-      <div 
-        className={`
-          relative mx-auto z-20 bg-white rounded-lg shadow-xl overflow-hidden
-          ${windowState === 'normal' ? 'w-[700px] mt-24' : ''}
-          ${windowState === 'maximized' ? 'w-[90%] h-[85vh] mt-16' : ''}
-          ${windowState === 'minimized' ? 'w-[700px] h-12 mt-24' : ''}
-        `}
+      <div
+        className="relative mx-auto top-22 left-5 z-20 w-[720px] h-[540px] rounded-[7px] border-[3px] border-[#3a3a3a] overflow-hidden bg-white"
+        style={{
+          background: 'white',
+          borderTop: '4px solid #b8460e',
+          borderLeft: '4px solid #b8460e',
+          borderRight: '4px solid #b8460e',
+          borderBottom: '4px solid #b8460e',
+        }}
       >
         {/* Window title bar */}
-        <div className="bg-gray-200 px-4 py-2 flex items-center">
+        <div className="flex items-center px-4 py-1.5" style={{ background: 'linear-gradient(90deg, #b8460e 0%, #a53d0c 100%)', borderBottom: '2.5px solid #b8460e', boxShadow: '0 2px 8px 0 #b8460e', height: '38px' }}>
           {/* Control buttons */}
-          <div className="flex space-x-2">
-            <button 
+          <div className="flex space-x-2 mr-3">
+            <button
               onClick={() => window.history.back()}
-              className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors"
+              className="w-4 h-4 rounded-full border-[1.5px] border-[#222] bg-[#ff5f56] hover:bg-[#ff8783] transition-colors shadow-[0_1px_0_#fff_inset]"
+              title="Close"
+              style={{ boxShadow: '0 1px 2px #222' }}
             />
-            <button 
+            <button
               onClick={() => setWindowState(windowState === 'minimized' ? 'normal' : 'minimized')}
-              className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-400 transition-colors"
+              className="w-4 h-4 rounded-full border-[1.5px] border-[#222] bg-[#ffbd2e] hover:bg-[#ffe29a] transition-colors shadow-[0_1px_0_#fff_inset]"
+              title="Minimize"
+              style={{ boxShadow: '0 1px 2px #222' }}
             />
-            <button 
+            <button
               onClick={() => setWindowState(windowState === 'maximized' ? 'normal' : 'maximized')}
-              className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-400 transition-colors"
+              className="w-4 h-4 rounded-full border-[1.5px] border-[#222] bg-[#27c93f] hover:bg-[#7fffa1] transition-colors shadow-[0_1px_0_#fff_inset]"
+              title="Maximize"
+              style={{ boxShadow: '0 1px 2px #222' }}
             />
           </div>
-          
-          {/* File name in center */}
-          <div className="flex-1 text-center text-gray-700 font-medium truncate">
-            {fileData.name}
+          {/* File name right-aligned */}
+          <div className="flex-1 text-right text-white font-bold text-[1.15rem] tracking-wide pixelated-font truncate drop-shadow-sm select-none" style={{ textShadow: '0 1px 2px #0a51c2, 0 0 2px #fff' }}>
+            <span style={{letterSpacing: '0.04em'}}>{fileData.name}</span>
           </div>
-          
           {/* Edit/Save buttons for markdown files */}
           {isMarkdownFile && (
-            <div className="flex gap-2">
+            <div className="flex gap-2 ml-4">
               {isEditMode ? (
-                <button 
+                <button
                   onClick={saveContent}
                   className="px-3 py-1 bg-[#b8460e] hover:bg-[#a53d0c] text-white text-xs rounded transition-colors pixelated-font"
                 >
                   Save
                 </button>
               ) : (
-                <button 
+                <button
                   onClick={() => setIsEditMode(true)}
                   className="px-3 py-1 bg-[#b8460e] text-white text-xs rounded transition-colors pixelated-font hover:bg-[#a53d0c]"
                 >
@@ -165,7 +171,7 @@ export default function FilePage() {
                 </button>
               )}
               {isEditMode && (
-                <button 
+                <button
                   onClick={() => {
                     setIsEditMode(false);
                     setEditedContent(fileData.content); // Reset to original content
@@ -178,20 +184,27 @@ export default function FilePage() {
             </div>
           )}
         </div>
-        
+        {/* Menu bar */}
+        <div className="flex items-center px-4 py-1 bg-[#f3e7c4] border-b border-[#bfc1c6] text-[0.98rem] font-semibold text-[#222] pixelated-font select-none" style={{height: '28px', fontFamily: 'monospace'}}>
+          <span className="mr-6 cursor-pointer hover:underline">File</span>
+          <span className="mr-6 cursor-pointer hover:underline">View</span>
+          <span className="mr-6 cursor-pointer hover:underline">Play</span>
+          <span className="mr-6 cursor-pointer hover:underline">Tools</span>
+          <span className="mr-6 cursor-pointer hover:underline">Help</span>
+        </div>
         {/* File content */}
         {windowState !== 'minimized' && (
           isEditMode && isMarkdownFile ? (
-            <div className="p-6 bg-white text-gray-800 min-h-[300px] max-h-[75vh]">
+            <div className="p-8 bg-white text-[#222] min-h-[300px] max-h-[340px]">
               <textarea
-                className="w-full h-[calc(75vh-100px)] min-h-[300px] p-4 border border-gray-300 rounded font-mono"
+                className="w-full h-[calc(60vh-100px)] min-h-[300px] p-4 border border-gray-300 rounded font-mono"
                 value={editedContent}
                 onChange={(e) => setEditedContent(e.target.value)}
                 placeholder="# Write your markdown here..."
               />
             </div>
           ) : (
-            <div className="p-6 bg-white text-gray-800 min-h-[300px] max-h-[75vh] overflow-y-auto">
+            <div className="p-8 bg-white text-[#222] min-h-[300px] max-h-[340px] overflow-y-auto pixelated-font text-[1.05rem] leading-relaxed relative" style={{ fontFamily: 'monospace, \"Pixelated\", \"Chicago\", \"Courier New\", Courier, monospace' }}>
               <ReactMarkdown>
                 {fileData.content}
               </ReactMarkdown>
